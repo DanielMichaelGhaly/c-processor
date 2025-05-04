@@ -1,0 +1,215 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#define NUM_REGISTERS 32 // constant for the number of registers also make life easy
+// Define constants for opcodes
+#define ADD 0
+#define SUB 1
+#define MUL 2
+#define MOVI 3
+#define JEQ 4
+#define AND 5
+#define XORI 6
+#define JMP 7
+#define LSL 8
+#define LSR 9
+#define MOVR 10
+#define MOVM 11
+
+const FILE*file = NULL;
+/* TO - DO :
+ * create memory , have a way to split between data and address memory
+ * separate fetch decode execute
+ * somthing to identify type of instruction
+ * creat a general binary to decimal converter
+ * struct for each instruction will help with the edge case instructions
+ */
+
+// a struct for each instruction type should make parsing easier and further opearations
+typedef struct {
+    uint8_t opcode;
+    uint8_t r1;
+    uint8_t r2;
+    uint8_t r3;
+    uint16_t shamt;
+} RFormat;
+typedef struct {
+    uint8_t opcode;
+    uint8_t r1;
+    uint8_t r2;
+    int32_t immediate;
+} IFormat;
+typedef struct {
+    uint8_t opcode;
+    uint32_t address;
+} JFormat;
+typedef union {
+    RFormat r_format;
+    IFormat i_format;
+    JFormat j_format;
+    uint32_t raw;
+} Instruction;
+
+//create a parser to break down the instructions read from the file
+// each instruction type handled accordingly
+// return the a binary value to be stored in memory
+uint32_t who_is_that_pokemon(char *line) {
+    char instruction[10];
+    char operands[50];
+    uint32_t binaryInstruction = 0;
+
+    // Extract instruction and operands
+    sscanf(line, "%s %[^\n]", instruction, operands);
+
+    // Parse R-Format instructions
+    if (strcmp(instruction, "ADD") == 0) {
+        int r1, r2, r3;
+        sscanf(operands, "R%d R%d R%d", &r1, &r2, &r3);
+        binaryInstruction = (ADD << 28) | (r1 << 23) | (r2 << 18) | (r3 << 13);
+    }
+    else if (strcmp(instruction, "SUB") == 0) {
+        int r1, r2, r3;
+        sscanf(operands, "R%d R%d R%d", &r1, &r2, &r3);
+        binaryInstruction = (SUB << 28) | (r1 << 23) | (r2 << 18) | (r3 << 13);
+    }
+    else if (strcmp(instruction, "MUL") == 0) {
+        int r1, r2, r3;
+        sscanf(operands, "R%d R%d R%d", &r1, &r2, &r3);
+        binaryInstruction = (MUL << 28) | (r1 << 23) | (r2 << 18) | (r3 << 13);
+    }
+    else if (strcmp(instruction, "LSL") == 0 || strcmp(instruction, "LSR") == 0) {
+        int r1, r2, shamt;
+        sscanf(operands, "R%d R%d %d", &r1, &r2, &shamt);
+        binaryInstruction = (strcmp(instruction, "LSL") == 0 ? LSL : LSR) << 28 | (r1 << 23) | (r2 << 18) | (0 << 13) | shamt;
+    }
+    // Parse I-Format instructions
+    else if (strcmp(instruction, "MOVI") == 0 || strcmp(instruction, "JEQ") == 0 ||
+             strcmp(instruction, "XORI") == 0 || strcmp(instruction, "MOVR") == 0 ||
+             strcmp(instruction, "MOVM") == 0) {
+        int r1, r2, imm;
+        if (strcmp(instruction, "MOVI") == 0) {
+            sscanf(operands, "R%d %d", &r1, &imm);
+            binaryInstruction = (MOVI << 28) | (r1 << 23) | (0 << 18) | (imm & 0x3FFFF);
+        } else {
+            sscanf(operands, "R%d R%d %d", &r1, &r2, &imm);
+            binaryInstruction = (MOVM << 28) | (r1 << 23) | (r2 << 18) | (imm & 0x3FFFF);
+        }
+    }
+    // Parse J-Format instructions
+    else if (strcmp(instruction, "JMP") == 0) {
+        int address;
+        sscanf(operands, "%d", &address);
+        binaryInstruction = (JMP << 28) | (address & 0x0FFFFFFF);
+    }
+
+    return binaryInstruction;
+}
+
+
+/* reading the instructions from the text file, line by line and processing each line
+ * using the who_is_that_pokemon function
+ */
+void read_instructions() {
+    //[lace the actual file name
+    file = fopen(filename, "r");
+    char line[256];
+    if (file != NULL) {
+        while (fgets(line, sizeof(line), file)) {
+            who_is_that_pokemon(line);
+        }
+        fclose(file);
+    }
+    else {
+        printf("Unable to open file\n");
+    }
+
+}
+
+//create registers , PC , ZER0 , R1 to 31 normal also created a reg file (array of pointers pointing to all the registers)
+//all the reg will be initialised to 0 and ready for use
+typedef struct Register {
+    int value;
+    void (*set)(struct Register*, int);
+    int (*get)(struct Register*);
+} Register;
+//this method allows you to set the value to a register
+void setRegister(Register* r, int val) {
+    r->value = val;
+}
+//get the value you stored
+int getRegister(Register* r) {
+    return r->value;
+}
+// this will allow to mimic inheritance to creat the PC and ZERO reg
+Register newRegister() {
+    Register r;
+    r.value = 0;
+    r.set = setRegister;
+    r.get = getRegister;
+    return r;
+}
+
+// Zero register inheritance from register
+typedef struct {
+    Register base;
+}ZERO;
+
+void setZero (Register* r, int val) {
+    r->value = 0;
+}
+
+ZERO newZero () {
+    ZERO z;
+    z.base = newRegister();
+    z.base.set = setZero;
+    return z;
+}
+
+//PC has a pointer to instruction should help with jump
+typedef struct {
+    Register base;
+    char* instruction;
+} PC;
+
+PC newPC(const char* instr) {
+    PC pc;
+    pc.base = newRegister();
+    pc.instruction = strdup(instr);
+    return pc;
+}
+// this is a register file will make life good in the future when it comes to dealing with the instructions
+Register register_file[NUM_REGISTERS];
+// Global instances of special registers
+ZERO zero;
+PC pc;
+
+// Initialize the register file at compile-time as we already know the size 32bits
+void make_file() {
+    for (int i = 1; i < NUM_REGISTERS; i++) {
+        register_file[i] = newRegister();
+    }
+    //zero at position zero
+    zero = newZero();
+    register_file[0] = zero.base;
+    //pc is the last reg in th  file
+    pc = newPC("default_instruction");
+    register_file[31] = pc.base;
+}
+
+int main(void) {
+    printf("Hello World\n");
+    make_file();
+
+
+    /*register_file[1].set(&register_file[1], 23);
+    register_file[2].set(&register_file[2], 45);
+    register_file[3].set(&register_file[3], 78);
+    register_file[4].set(&register_file[4], 78);
+    printf("R1 has value %d\n", register_file[1].get(&register_file[1]));
+    printf("R2 has value %d\n", register_file[2].get(&register_file[2]));
+    printf("R3 has value %d\n", register_file[3].get(&register_file[3]));*/
+
+
+    return 0;
+}
