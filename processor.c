@@ -55,8 +55,55 @@ const int R0[32] = {0};
 int PC[11] ={0};
 
 
+//creating functions for each operation: 
+//1. ADD:
+void add(int* R1, int* R2, int* R3){
 
+}
+//2. SUB: 
+void subtract(int* R1, int* R2, int* R3){
 
+}
+//3. MUL:
+void multiply(int* R1, int* R2, int* R3){
+
+}
+//4. MOVI:
+void move_immediate(int* R1, int IMM){
+  
+}
+//5. JEQ:
+void jump_if_equal(int* R1, int* R2, int IMM){
+  
+}
+//6. AND:
+void and(int* R1, int* R2, int* R3){
+  
+}
+//7. XORI:
+void exclusive_or_immediate(int* R1, int* R2, int IMM){
+  
+}
+//8. JMP:
+void jump(int ADDRESS){
+  
+}
+//9. LSL:
+void logical_shift_left(int* R1, int* R2, int SHAMT){
+  
+}
+//10. LSR:
+void logical_shift_right(int* R1, int* R2, int SHAMT){
+  
+}
+//11. MOVR:
+void move_to_register(int* R1, int* R2, int IMM){
+  
+}
+//12. MOVM:
+void move_to_memory(int* R1, int* R2, int IMM){
+  
+}
 
 
 
