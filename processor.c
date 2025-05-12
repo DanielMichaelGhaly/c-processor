@@ -1,6 +1,7 @@
 //include libraries: 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 //Creating ram: 
@@ -111,12 +112,24 @@ void init(){
   ram_initialize();
 }
 
+char* read_from_ram(int* row){
+  char* str = malloc(33*sizeof(char));
+  for(int i=0;i<32;i++){
+    str[i] = row[i] +'0';
+  }
+  str[32] = '\0';
+  return str;
+}
 
 int main(){
 
   init();
-  printf("Memory: %d",PC[5]);
+  int x = 0b100;
+  printf("X: %d\n",x);
 
+  char* res = read_from_ram(ram[5]);
+  printf("Instrunction: %s\n",res);
+  
 
   return 0;
 
