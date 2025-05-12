@@ -121,6 +121,12 @@ char* read_from_ram(int* row){
   return str;
 }
 
+
+int convert_from_binary_string_to_int(char* str){
+  return (int)strtol(str, NULL, 2);  // base 2 = binary
+}
+
+
 int main(){
 
   init();
@@ -129,6 +135,9 @@ int main(){
 
   char* res = read_from_ram(ram[5]);
   printf("Instrunction: %s\n",res);
+
+  char* test = "01010";
+  printf("number converted: %d\n",convert_from_binary_string_to_int(test));
   
 
   return 0;
