@@ -59,9 +59,9 @@ int getInstructionType(int instruction[32]) {
 int* processLine(char line[]) {
     static int arr[32] = {0};  // Persistent storage (not lost after return)
     char *token = strtok(line, " ");  // Get the first token
-    char *op1 = strtok(NULL, " ");  // e.g., R1
-    char *op2 = strtok(NULL, " ");  // e.g., R2
-    char *op3 = strtok(NULL, " ");  // e.g., R3
+
+
+
 
 
     if (token != NULL) {
@@ -125,7 +125,9 @@ int* processLine(char line[]) {
 
     int type = getInstructionType(arr);
     printf("Instruction type is: %d\n", type);
-    if (type == 0 ) { // R-type  R1,R2
+    if (type == 0 ) {
+        char *op1 = strtok(NULL, " ");  // e.g., R1// R-type  R1,R2
+        char *op2 = strtok(NULL, " ");  // e.g., R2
 
     if (strcmp(op1, "R0") == 0) {
         arr[4]=0; arr[5]=0; arr[6]=0; arr[7]=0; arr[8]=0;
@@ -264,6 +266,7 @@ int* processLine(char line[]) {
 
 }
     if (type==0) {
+        char *op3 = strtok(NULL, " ");  // e.g., R3
         if (op3[0] == 'R') {
                 if (strcmp(op3, "R0") == 0) {
         arr[14]=0; arr[15]=0; arr[16]=0; arr[17]=0; arr[18]=0;
@@ -351,6 +354,7 @@ int* processLine(char line[]) {
 
     }
     if (type==1) {
+        char *op1 = strtok(NULL, " ");  // e.g., R1
         //I
         if (strcmp(op1, "R0") == 0) {
         arr[4]=0; arr[5]=0; arr[6]=0; arr[7]=0; arr[8]=0;
@@ -419,6 +423,7 @@ int* processLine(char line[]) {
     } else {
         printf("Invalid register: %s\n", op1);
     }
+        char *op2 = strtok(NULL, " ");  // e.g., R2
         if (op2[0] == 'R') {
             if (strcmp(op2, "R0") == 0) {
         arr[9]=0; arr[10]=0; arr[11]=0; arr[12]=0; arr[13]=0;
@@ -488,8 +493,41 @@ int* processLine(char line[]) {
         printf("Invalid register: %s\n", op2);
     }
 
+        } else {
+            int value = atoi(op2);
+            printf("%d\n", value);
+            int bits = 18;          // Number of bits to store
+            int end = 31;           // LSB at arr[31]
+            int start = 14;         // MSB at arr[14]
+
+            // Two's complement for negative numbers
+            if (value < 0) {
+                value = (1 << bits) + value;
+            }
+
+            // Store from arr[31] to arr[14] (LSB → MSB)
+            for (int i = 0; i < bits; i++) {
+                arr[end - i] = value % 2;
+                value = value / 2;
+            }
+
         }
 
+
+
+    }
+    if (type==2) {
+        char *op1 = strtok(NULL, " ");  // e.g., R1
+        int value = atoi(op1);
+        printf("%d\n", value);
+        int bits = 28;        // SHAMT is 13 bits wide
+        int start = 4;       // MSB goes here
+
+        unsigned int uval = value & ((1 << bits) - 1);  // ensure we only keep 13 bits
+
+        for (int i = 0; i < bits; i++) {
+            arr[start + i] = (uval >> (bits - 1 - i)) & 1;
+        }
 
 
     }
@@ -509,7 +547,7 @@ int* processLine(char line[]) {
 }
 
 int main() {
-    char line[] = "ADD R1 R2 1";
+    char line[] = "JMP 5";
     int *arr = processLine(line);
 
     // Print first 4 bits of the instruction
