@@ -52,6 +52,8 @@ int R28[32]= {0};
 int R29[32]= {0};
 int R30[32]= {0};
 int R31[32]= {0};
+
+
 const int R0[32] = {0};
 int PC[11] ={0};
 
@@ -59,7 +61,7 @@ int PC[11] ={0};
 //creating functions for each operation: 
 //1. ADD:
 void add(int* R1, int* R2, int* R3){
-
+  
 }
 //2. SUB: 
 void subtract(int* R1, int* R2, int* R3){
@@ -112,7 +114,16 @@ void init(){
   ram_initialize();
 }
 
-char* read_from_ram(int* row){
+/* 1. reading from the ram ----> string 
+   2. convert the string of binary to an int
+   3. Created a function that does both; read from the ram and convert to int directly
+   4. reading from register -----> int
+   5. writing int to register
+
+*/
+
+//1. 
+char* read_from_ram_and_convert_to_str(int* row){
   char* str = malloc(33*sizeof(char));
   for(int i=0;i<32;i++){
     str[i] = row[i] +'0';
@@ -121,10 +132,57 @@ char* read_from_ram(int* row){
   return str;
 }
 
+//2. 
+int convert_from_binary_string_to_int(char* str) {
+    int length = strlen(str);
 
-int convert_from_binary_string_to_int(char* str){
-  return (int)strtol(str, NULL, 2);  // base 2 = binary
+    // Parse as unsigned to avoid sign-extension issues
+    unsigned int value = (unsigned int)strtol(str, NULL, 2);
+
+    // If the most significant bit (MSB) is 1 → negative number in two's complement
+    if (str[0] == '1') {
+        // Compute correct negative value based on bit-width
+        unsigned int mask = 1U << (length - 1);  // Sign bit mask
+        value = value - (mask << 1);             // Equivalent to value - 2^length
+    }
+
+    return (int)value;  // Return as signed 32-bit integer
 }
+
+//3.
+int read_from_ram_and_convert_to_int(int* row){
+  char* str = read_from_ram_and_convert_to_str(row);
+  int x = convert_from_binary_string_to_int(str);
+  return x;
+
+}
+
+//4. 
+int read_from_register_and_convert_to_int(int reg[32]) {
+    unsigned int value = 0;
+
+    // Build the integer value from the register bits
+    for (int i = 0; i < 32; i++) {
+        value = (value << 1) | (reg[i] & 1);  // Shift left and add the current bit
+    }
+
+    // If the MSB (reg[0]) is 1, apply two's complement adjustment
+    if (reg[0] == 1) {
+        value -= (1UL << 32);  // Equivalent to value - 2^32
+    }
+
+    return (int)value;  // Cast to signed int
+}
+
+
+//5. 
+void write_int_into_register(int value, int reg[32]) {
+    for (int i = 31; i >= 0; i--) {
+        reg[31 - i] = (value >> i) & 1;  // MSB to LSB
+    }
+}
+
+
 
 
 int main(){
@@ -133,11 +191,26 @@ int main(){
   int x = 0b100;
   printf("X: %d\n",x);
 
-  char* res = read_from_ram(ram[5]);
+  char* res = read_from_ram_and_convert_to_str(ram[5]);
   printf("Instrunction: %s\n",res);
 
-  char* test = "01010";
+  char* test = "11010";
   printf("number converted: %d\n",convert_from_binary_string_to_int(test));
+
+  int z = read_from_register_and_convert_to_int(R1);
+  printf("z= %d\n",z);
+
+  write_int_into_register(-50,R1);
+
+  int y = read_from_register_and_convert_to_int(R1);
+  printf("y= %d\n",y);
+
+  int yy = read_from_ram_and_convert_to_int(ram[5]);
+  printf("read from ram to integer: %d\n",yy);
+
+  write_int_into_register(-6,R1);
+  int yyy = read_from_register_and_convert_to_int(R1);
+  printf("read from ram last: %d\n",yyy);
   
 
   return 0;
