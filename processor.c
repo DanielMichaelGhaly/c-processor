@@ -56,35 +56,52 @@ int R31[32]= {0};
 
 const int R0[32] = {0};
 int PC[11] ={0};
+int IR[32] = {0};
 
 
 //creating functions for each operation: 
-//1. ADD:
-void add(int* R1, int* R2, int* R3){
-  
-}
-//2. SUB: 
-void subtract(int* R1, int* R2, int* R3){
+//1. ADD: (done)
+void add(int R1[32], int R2[32], int R3[32]){
+  int tmp1 = 0;
+  int tmp2 = read_from_register_and_convert_to_int(R2);
+  int tmp3 = read_from_register_and_convert_to_int(R3);
 
+  tmp1 = tmp2 + tmp3;
+  write_int_into_register(tmp1,R1);
 }
-//3. MUL:
-void multiply(int* R1, int* R2, int* R3){
 
+//2. SUB: (done)
+void subtract(int R1[32], int R2[32], int R3[32]){
+  int tmp1 = 0;
+  int tmp2 = read_from_register_and_convert_to_int(R2);
+  int tmp3 = read_from_register_and_convert_to_int(R3);
+
+  tmp1 = tmp2 - tmp3;
+  write_int_into_register(tmp1,R1);
+}
+//3. MUL (done):
+void multiply(int R1[32], int R2[32], int R3[32]){
+  int tmp1 = 0;
+  int tmp2 = read_from_register_and_convert_to_int(R2);
+  int tmp3 = read_from_register_and_convert_to_int(R3);
+
+  tmp1 = tmp2 * tmp3;
+  write_int_into_register(tmp1,R1);
 }
 //4. MOVI:
-void move_immediate(int* R1, int IMM){
+void move_immediate(int R1[32], int IMM){
   
 }
 //5. JEQ:
-void jump_if_equal(int* R1, int* R2, int IMM){
+void jump_if_equal(int R1[32], int R2[32], int IMM){
   
 }
 //6. AND:
-void and(int* R1, int* R2, int* R3){
+void and(int R1[32], int R2[32], int R3[32]){
   
 }
 //7. XORI:
-void exclusive_or_immediate(int* R1, int* R2, int IMM){
+void exclusive_or_immediate(int R1[32], int R2[32], int IMM){
   
 }
 //8. JMP:
@@ -92,19 +109,19 @@ void jump(int ADDRESS){
   
 }
 //9. LSL:
-void logical_shift_left(int* R1, int* R2, int SHAMT){
+void logical_shift_left(int R1[32], int R2[32], int SHAMT){
   
 }
 //10. LSR:
-void logical_shift_right(int* R1, int* R2, int SHAMT){
+void logical_shift_right(int R1[32], int R2[32], int SHAMT){
   
 }
 //11. MOVR:
-void move_to_register(int* R1, int* R2, int IMM){
+void move_to_register(int R1[32], int R2[32], int IMM){
   
 }
 //12. MOVM:
-void move_to_memory(int* R1, int* R2, int IMM){
+void move_to_memory(int R1[32], int R2[32], int IMM){
   
 }
 
@@ -190,28 +207,24 @@ int main(){
   init();
   int x = 0b100;
   printf("X: %d\n",x);
+  write_int_into_register(50,R1);
+  write_int_into_register(-10,R2);
+  write_int_into_register(50,R4);
 
-  char* res = read_from_ram_and_convert_to_str(ram[5]);
-  printf("Instrunction: %s\n",res);
+  multiply(R1,R2,R4);
+  int tmp1 = read_from_register_and_convert_to_int(R1);
+  int tmp2 = read_from_register_and_convert_to_int(R2);
+  int tmp3 = read_from_register_and_convert_to_int(R3);
+  int tmp4 = read_from_register_and_convert_to_int(R4);
 
-  char* test = "11010";
-  printf("number converted: %d\n",convert_from_binary_string_to_int(test));
+  printf("Content of register1: %d\n",tmp1);
+  printf("Content of register2: %d\n",tmp2);
+  printf("Content of register3: %d\n",tmp3);
+  printf("Content of register4: %d\n",tmp4);
 
-  int z = read_from_register_and_convert_to_int(R1);
-  printf("z= %d\n",z);
 
-  write_int_into_register(-50,R1);
 
-  int y = read_from_register_and_convert_to_int(R1);
-  printf("y= %d\n",y);
 
-  int yy = read_from_ram_and_convert_to_int(ram[5]);
-  printf("read from ram to integer: %d\n",yy);
-
-  write_int_into_register(-6,R1);
-  int yyy = read_from_register_and_convert_to_int(R1);
-  printf("read from ram last: %d\n",yyy);
-  
 
   return 0;
 
