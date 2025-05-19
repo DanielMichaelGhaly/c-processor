@@ -1,5 +1,8 @@
 
 int pc = 0;
+//queues for the pipeline they are latter initialized in the individual functions
+Queue fetch_queue;
+Queue decode_queue;
 
 typedef struct {
     int ALUsig[5];
@@ -40,12 +43,20 @@ int pc_incr(int* pc){
 void fetch(int* pc){
     int instr = read_from_memory(read_from_register(pc)); // read instruction from memory
     pc_incr(pc); 
-    // append instr to fetch queue assume clk
-    // dequeu instr from fetch queue 
+    // append instruction to fetch queue
+    initQueue(fetch_queue);
+    enqueue(fetch_queue, instr);
+    // dequeue fetch queue in the deoced function 
+    // clock cycle count ting
 }
 
 
-void decode(int* instr){
+void decode(){
+    // append instruction to decode queue
+    int* instr = dequeue(fetch_queue);
+    initQueue(decode_queue);
+    enqueue(decode_queue, instr);
+    // clock cycle count ting
     int opcode = (instr[0] << 3) | (instr[1] << 2) | (instr[2] << 1) | instr[3];
     int ALUsig[5] = {0,0,0,0,0};
     int shift[2] = {0,0};
@@ -116,7 +127,8 @@ void decode(int* instr){
             break;
     }
     // decode instr
-    // append decoded instr to decode queue
+    // int* instr = dequeue(fetch_queue); 
+    //should be added to the excute queue
 }
 
 
