@@ -1,9 +1,68 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+
+
+#include <stdio.h>
+
+int getInstructionType(int instruction[32]) {
+    // Extract 4-bit opcode (bits 0 to 3)
+    int opcode = (instruction[0] << 3) | (instruction[1] << 2) | (instruction[2] << 1) | instruction[3];
+
+    switch (opcode) {
+        case 0:  // ADD
+        case 1:  // SUB
+        case 2:  // MUL
+        case 5:  // AND
+        case 8:  // LSL
+        case 9:  // LSR
+            return 0;//R
+
+        case 3:  // MOVI
+        case 4:  // JEQ
+        case 6:  // XORI
+        case 10: // MOVR
+        case 11: // MOVM
+            return 1; //I
+
+        case 7:  // JMP
+            return 2;//J
+
+        default:
+            return -1;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 int* processLine(char line[]) {
     static int arr[32] = {0};  // Persistent storage (not lost after return)
     char *token = strtok(line, " ");  // Get the first token
+    char *op1 = strtok(NULL, " ");  // e.g., R1
+    char *op2 = strtok(NULL, " ");  // e.g., R2
+    char *op3 = strtok(NULL, " ");  // e.g., R3
+
 
     if (token != NULL) {
         printf("First token: %s\n", token);  // Example: "ADD"
@@ -61,19 +120,408 @@ int* processLine(char line[]) {
         }
     }
 
+
+
+
+    int type = getInstructionType(arr);
+    printf("Instruction type is: %d\n", type);
+    if (type == 0 ) { // R-type  R1,R2
+
+    if (strcmp(op1, "R0") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=0; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R1") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=0; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R2") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=0; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R3") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=0; arr[7]=1; arr[8]=1;
+    } else if (strcmp(op1, "R4") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=1; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R5") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=1; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R6") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=1; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R7") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=1; arr[7]=1; arr[8]=1;
+    } else if (strcmp(op1, "R8") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=0; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R9") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=0; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R10") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=0; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R11") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=0; arr[7]=1; arr[8]=1;
+    } else if (strcmp(op1, "R12") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=1; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R13") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=1; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R14") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=1; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R15") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=1; arr[7]=1; arr[8]=1;
+    } else if (strcmp(op1, "R16") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=0; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R17") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=0; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R18") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=0; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R19") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=0; arr[7]=1; arr[8]=1;
+    } else if (strcmp(op1, "R20") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=1; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R21") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=1; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R22") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=1; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R23") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=1; arr[7]=1; arr[8]=1;
+    } else if (strcmp(op1, "R24") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=0; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R25") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=0; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R26") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=0; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R27") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=0; arr[7]=1; arr[8]=1;
+    } else if (strcmp(op1, "R28") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=1; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R29") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=1; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R30") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=1; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R31") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=1; arr[7]=1; arr[8]=1;
+    } else {
+        printf("Invalid register: %s\n", op1);
+    }
+        if (strcmp(op2, "R0") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=0; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R1") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=0; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R2") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=0; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R3") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=0; arr[12]=1; arr[13]=1;
+    } else if (strcmp(op2, "R4") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=1; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R5") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=1; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R6") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=1; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R7") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=1; arr[12]=1; arr[13]=1;
+    } else if (strcmp(op2, "R8") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=0; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R9") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=0; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R10") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=0; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R11") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=0; arr[12]=1; arr[13]=1;
+    } else if (strcmp(op2, "R12") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=1; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R13") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=1; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R14") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=1; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R15") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=1; arr[12]=1; arr[13]=1;
+    } else if (strcmp(op2, "R16") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=0; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R17") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=0; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R18") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=0; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R19") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=0; arr[12]=1; arr[13]=1;
+    } else if (strcmp(op2, "R20") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=1; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R21") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=1; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R22") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=1; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R23") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=1; arr[12]=1; arr[13]=1;
+    } else if (strcmp(op2, "R24") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=0; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R25") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=0; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R26") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=0; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R27") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=0; arr[12]=1; arr[13]=1;
+    } else if (strcmp(op2, "R28") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=1; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R29") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=1; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R30") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=1; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R31") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=1; arr[12]=1; arr[13]=1;
+    } else {
+        printf("Invalid register: %s\n", op2);
+    }
+
+}
+    if (type==0) {
+        if (op3[0] == 'R') {
+                if (strcmp(op3, "R0") == 0) {
+        arr[14]=0; arr[15]=0; arr[16]=0; arr[17]=0; arr[18]=0;
+    } else if (strcmp(op3, "R1") == 0) {
+        arr[14]=0; arr[15]=0; arr[16]=0; arr[17]=0; arr[18]=1;
+    } else if (strcmp(op3, "R2") == 0) {
+        arr[14]=0; arr[15]=0; arr[16]=0; arr[17]=1; arr[18]=0;
+    } else if (strcmp(op3, "R3") == 0) {
+        arr[14]=0; arr[15]=0; arr[16]=0; arr[17]=1; arr[18]=1;
+    } else if (strcmp(op3, "R4") == 0) {
+        arr[14]=0; arr[15]=0; arr[16]=1; arr[17]=0; arr[18]=0;
+    } else if (strcmp(op3, "R5") == 0) {
+        arr[14]=0; arr[15]=0; arr[16]=1; arr[17]=0; arr[18]=1;
+    } else if (strcmp(op3, "R6") == 0) {
+        arr[14]=0; arr[15]=0; arr[16]=1; arr[17]=1; arr[18]=0;
+    } else if (strcmp(op3, "R7") == 0) {
+        arr[14]=0; arr[15]=0; arr[16]=1; arr[17]=1; arr[18]=1;
+    } else if (strcmp(op3, "R8") == 0) {
+        arr[14]=0; arr[15]=1; arr[16]=0; arr[17]=0; arr[18]=0;
+    } else if (strcmp(op3, "R9") == 0) {
+        arr[14]=0; arr[15]=1; arr[16]=0; arr[17]=0; arr[18]=1;
+    } else if (strcmp(op3, "R10") == 0) {
+        arr[14]=0; arr[15]=1; arr[16]=0; arr[17]=1; arr[18]=0;
+    } else if (strcmp(op3, "R11") == 0) {
+        arr[14]=0; arr[15]=1; arr[16]=0; arr[17]=1; arr[18]=1;
+    } else if (strcmp(op3, "R12") == 0) {
+        arr[14]=0; arr[15]=1; arr[16]=1; arr[17]=0; arr[18]=0;
+    } else if (strcmp(op3, "R13") == 0) {
+        arr[14]=0; arr[15]=1; arr[16]=1; arr[17]=0; arr[18]=1;
+    } else if (strcmp(op3, "R14") == 0) {
+        arr[14]=0; arr[15]=1; arr[16]=1; arr[17]=1; arr[18]=0;
+    } else if (strcmp(op3, "R15") == 0) {
+        arr[14]=0; arr[15]=1; arr[16]=1; arr[17]=1; arr[18]=1;
+    } else if (strcmp(op3, "R16") == 0) {
+        arr[14]=1; arr[15]=0; arr[16]=0; arr[17]=0; arr[18]=0;
+    } else if (strcmp(op3, "R17") == 0) {
+        arr[14]=1; arr[15]=0; arr[16]=0; arr[17]=0; arr[18]=1;
+    } else if (strcmp(op3, "R18") == 0) {
+        arr[14]=1; arr[15]=0; arr[16]=0; arr[17]=1; arr[18]=0;
+    } else if (strcmp(op3, "R19") == 0) {
+        arr[14]=1; arr[15]=0; arr[16]=0; arr[17]=1; arr[18]=1;
+    } else if (strcmp(op3, "R20") == 0) {
+        arr[14]=1; arr[15]=0; arr[16]=1; arr[17]=0; arr[18]=0;
+    } else if (strcmp(op3, "R21") == 0) {
+        arr[14]=1; arr[15]=0; arr[16]=1; arr[17]=0; arr[18]=1;
+    } else if (strcmp(op3, "R22") == 0) {
+        arr[14]=1; arr[15]=0; arr[16]=1; arr[17]=1; arr[18]=0;
+    } else if (strcmp(op3, "R23") == 0) {
+        arr[14]=1; arr[15]=0; arr[16]=1; arr[17]=1; arr[18]=1;
+    } else if (strcmp(op3, "R24") == 0) {
+        arr[14]=1; arr[15]=1; arr[16]=0; arr[17]=0; arr[18]=0;
+    } else if (strcmp(op3, "R25") == 0) {
+        arr[14]=1; arr[15]=1; arr[16]=0; arr[17]=0; arr[18]=1;
+    } else if (strcmp(op3, "R26") == 0) {
+        arr[14]=1; arr[15]=1; arr[16]=0; arr[17]=1; arr[18]=0;
+    } else if (strcmp(op3, "R27") == 0) {
+        arr[14]=1; arr[15]=1; arr[16]=0; arr[17]=1; arr[18]=1;
+    } else if (strcmp(op3, "R28") == 0) {
+        arr[14]=1; arr[15]=1; arr[16]=1; arr[17]=0; arr[18]=0;
+    } else if (strcmp(op3, "R29") == 0) {
+        arr[14]=1; arr[15]=1; arr[16]=1; arr[17]=0; arr[18]=1;
+    } else if (strcmp(op3, "R30") == 0) {
+        arr[14]=1; arr[15]=1; arr[16]=1; arr[17]=1; arr[18]=0;
+    } else if (strcmp(op3, "R31") == 0) {
+        arr[14]=1; arr[15]=1; arr[16]=1; arr[17]=1; arr[18]=1;
+    } else {
+        printf("Invalid register: %s\n", op3);
+    }
+
+        }else {
+           int value = atoi(op3);
+            printf("%d\n", value);
+            int bits = 13;        // SHAMT is 13 bits wide
+            int start = 19;       // MSB goes here
+
+            unsigned int uval = value & ((1 << bits) - 1);  // ensure we only keep 13 bits
+
+            for (int i = 0; i < bits; i++) {
+                arr[start + i] = (uval >> (bits - 1 - i)) & 1;
+            }
+
+
+       }
+
+
+    }
+    if (type==1) {
+        //I
+        if (strcmp(op1, "R0") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=0; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R1") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=0; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R2") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=0; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R3") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=0; arr[7]=1; arr[8]=1;
+    } else if (strcmp(op1, "R4") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=1; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R5") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=1; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R6") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=1; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R7") == 0) {
+        arr[4]=0; arr[5]=0; arr[6]=1; arr[7]=1; arr[8]=1;
+    } else if (strcmp(op1, "R8") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=0; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R9") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=0; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R10") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=0; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R11") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=0; arr[7]=1; arr[8]=1;
+    } else if (strcmp(op1, "R12") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=1; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R13") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=1; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R14") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=1; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R15") == 0) {
+        arr[4]=0; arr[5]=1; arr[6]=1; arr[7]=1; arr[8]=1;
+    } else if (strcmp(op1, "R16") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=0; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R17") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=0; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R18") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=0; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R19") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=0; arr[7]=1; arr[8]=1;
+    } else if (strcmp(op1, "R20") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=1; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R21") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=1; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R22") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=1; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R23") == 0) {
+        arr[4]=1; arr[5]=0; arr[6]=1; arr[7]=1; arr[8]=1;
+    } else if (strcmp(op1, "R24") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=0; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R25") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=0; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R26") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=0; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R27") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=0; arr[7]=1; arr[8]=1;
+    } else if (strcmp(op1, "R28") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=1; arr[7]=0; arr[8]=0;
+    } else if (strcmp(op1, "R29") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=1; arr[7]=0; arr[8]=1;
+    } else if (strcmp(op1, "R30") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=1; arr[7]=1; arr[8]=0;
+    } else if (strcmp(op1, "R31") == 0) {
+        arr[4]=1; arr[5]=1; arr[6]=1; arr[7]=1; arr[8]=1;
+    } else {
+        printf("Invalid register: %s\n", op1);
+    }
+        if (op2[0] == 'R') {
+            if (strcmp(op2, "R0") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=0; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R1") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=0; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R2") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=0; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R3") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=0; arr[12]=1; arr[13]=1;
+    } else if (strcmp(op2, "R4") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=1; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R5") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=1; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R6") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=1; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R7") == 0) {
+        arr[9]=0; arr[10]=0; arr[11]=1; arr[12]=1; arr[13]=1;
+    } else if (strcmp(op2, "R8") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=0; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R9") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=0; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R10") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=0; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R11") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=0; arr[12]=1; arr[13]=1;
+    } else if (strcmp(op2, "R12") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=1; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R13") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=1; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R14") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=1; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R15") == 0) {
+        arr[9]=0; arr[10]=1; arr[11]=1; arr[12]=1; arr[13]=1;
+    } else if (strcmp(op2, "R16") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=0; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R17") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=0; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R18") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=0; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R19") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=0; arr[12]=1; arr[13]=1;
+    } else if (strcmp(op2, "R20") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=1; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R21") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=1; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R22") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=1; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R23") == 0) {
+        arr[9]=1; arr[10]=0; arr[11]=1; arr[12]=1; arr[13]=1;
+    } else if (strcmp(op2, "R24") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=0; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R25") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=0; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R26") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=0; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R27") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=0; arr[12]=1; arr[13]=1;
+    } else if (strcmp(op2, "R28") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=1; arr[12]=0; arr[13]=0;
+    } else if (strcmp(op2, "R29") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=1; arr[12]=0; arr[13]=1;
+    } else if (strcmp(op2, "R30") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=1; arr[12]=1; arr[13]=0;
+    } else if (strcmp(op2, "R31") == 0) {
+        arr[9]=1; arr[10]=1; arr[11]=1; arr[12]=1; arr[13]=1;
+    } else {
+        printf("Invalid register: %s\n", op2);
+    }
+
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
     return arr;
 }
 
 int main() {
-    char line[] = "MOVM R1 R2 R3";
+    char line[] = "ADD R1 R2 1";
     int *arr = processLine(line);
 
     // Print first 4 bits of the instruction
     printf("Opcode: ");
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 32; i++) {
         printf("%d", arr[i]);
-    }
-    printf("\n");
+         }
+        // printf("\n");
+        // char str[] = "-45";
+        // int value = atoi(str);
+        // printf("%d\n", value);
 
-    return 0;
-}
+        return 0;
+    }
+
