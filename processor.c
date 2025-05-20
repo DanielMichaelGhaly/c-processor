@@ -27,8 +27,6 @@ for (int j=0; j<2048;j++){
 static int clk_cycle = 0;
 
 
-
-
 //Creating Registers: 
 int R1[32] = {0};
 int R2[32]= {0};
@@ -69,6 +67,80 @@ int IR[32] = {0};
 int ALU[32] = {0};
 int AR[32] = {0};
 int DR[32] = {0};
+
+
+//data:
+typedef struct {
+    int opcode;
+    int sig;
+    int exec;
+    int* R1;
+    int* R2;
+    int* R3;
+    int SHAMT;
+    int IMM;
+    int ADDRESS;
+} Data;
+
+Data initD(){
+  Data r = {-1,-1,-1,R0,R0,R0,-1,-1,-1};
+  return r;
+}
+
+typedef struct Node {
+    Data data;
+    struct Node* next;
+} Node;
+
+typedef struct {
+    Node* front;
+    Node* rear;
+} QUEUE;
+
+void init_queue(QUEUE* q) {
+    q->front = q->rear = NULL;
+}
+
+void enqueue(QUEUE* q, Data d) {
+    Node* node = malloc(sizeof(Node));
+    node->data = d;
+    node->next = NULL;
+
+    if (q->rear == NULL) {
+        q->front = q->rear = node;
+    } else {
+        q->rear->next = node;
+        q->rear = node;
+    }
+}
+
+Data dequeue(QUEUE* q) {
+    if (q->front == NULL) {
+        printf("Queue underflow!\n");
+        exit(1);  // Or handle safely
+    }
+
+    Node* temp = q->front;
+    Data result = temp->data;
+    q->front = temp->next;
+    if (q->front == NULL)
+        q->rear = NULL;
+    free(temp);
+    return result;
+}
+
+int isEmpty(QUEUE* q) {
+    return (q->front == NULL);
+}
+
+QUEUE fetch_stage;
+QUEUE decode_stage;
+QUEUE exec_stage;
+QUEUE mem_stage;
+QUEUE WB_stage;
+
+
+
 
 
 // function that will be used later as a signal for write back stage:
@@ -347,8 +419,25 @@ void write_int_into_register(int value, int reg[32]) {
 
 
 int main(){
+  init_queue(&fetch_stage);
+  init_queue(&decode_stage);
+  init_queue(&exec_stage);
+  init_queue(&mem_stage);
+  init_queue(&WB_stage);
 
   int x = 0b100;
+  Data a1 = initD();
+  Data a2 = initD();
+  a2.opcode = 2;
+  enqueue(&fetch_stage,a1);
+  enqueue(&fetch_stage,a2);
+  Data a3 = dequeue(&fetch_stage);
+  printf("the first data's opcode: %d\n",a3.opcode);
+  a3 = dequeue(&fetch_stage);
+  printf("the second data's opcode: %d\n",a3.opcode);
+
+
+
   printf("X: %d\n",x);
   write_int_into_register(50,R1);
   write_int_into_register(16,R2);
