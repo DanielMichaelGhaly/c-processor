@@ -1,4 +1,6 @@
-
+#include <stdio.h>
+#include <stdlib.h>
+#include "queue.h"
 int pc = 0;
 //queues for the pipeline they are latter initialized in the individual functions
 Queue fetch_queue;
