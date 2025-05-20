@@ -33,29 +33,6 @@ int getInstructionType(int instruction[32]) {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 int* processLine(char line[]) {
     static int arr[32] = {0};  // Persistent storage (not lost after return)
     char *token = strtok(line, " ");  // Get the first token

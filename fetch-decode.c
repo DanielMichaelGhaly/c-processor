@@ -1,37 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "queue.h"
+#include "fetch-decode.h"
+
 int pc = 0;
 //queues for the pipeline they are latter initialized in the individual functions
-Queue fetch_queue;
-Queue decode_queue;
-
-typedef struct {
-    int ALUsig[5];
-    int shift[2];
-    int memR;
-    int memW;
-    int regW;
-    int branch;
-} ControlSignals;
-
-typedef struct {
-    int r1;
-    int r2;
-    int r3;
-    int shamt;
-    int immediate;
-    int address;
-} DecodedFields;
-
-extern ControlSignals ctrl;
-extern DecodedFields df;
-
-
-// Initialize or reset control signals
-void reset_control_signals(void);
-// Initialize or reset decoded fields
-void reset_decoded_fields(void);
+Queue *fetch_queue;
+Queue *decode_queue;
 
 ControlSignals ctrl;
 DecodedFields df;
@@ -39,7 +14,6 @@ DecodedFields df;
 int pc_incr(int* pc){
     return pc += 1 ;
 }
-
 
 
 void fetch(int* pc){
