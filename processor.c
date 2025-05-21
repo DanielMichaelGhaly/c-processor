@@ -416,6 +416,154 @@ void write_int_into_register(int value, int reg[32]) {
 }
 
 
+int* get_register_by_number(int reg_num) {
+    switch (reg_num) {
+        case 0:  return R0;
+        case 1:  return R1;
+        case 2:  return R2;
+        case 3:  return R3;
+        case 4:  return R4;
+        case 5:  return R5;
+        case 6:  return R6;
+        case 7:  return R7;
+        case 8:  return R8;
+        case 9:  return R9;
+        case 10: return R10;
+        case 11: return R11;
+        case 12: return R12;
+        case 13: return R13;
+        case 14: return R14;
+        case 15: return R15;
+        case 16: return R16;
+        case 17: return R17;
+        case 18: return R18;
+        case 19: return R19;
+        case 20: return R20;
+        case 21: return R21;
+        case 22: return R22;
+        case 23: return R23;
+        case 24: return R24;
+        case 25: return R25;
+        case 26: return R26;
+        case 27: return R27;
+        case 28: return R28;
+        case 29: return R29;
+        case 30: return R30;
+        case 31: return R31;
+        default: return NULL;  // Invalid register number
+    }
+}
+
+
+
+//fetch code: 
+void fetch(){
+  printf("I am Currently Fetching 🔍\n");
+  int line = read_from_register_and_convert_to_int(PC);
+  printf("PC: %d\n",line);
+  int z = read_from_ram_and_convert_to_int(ram[line]);
+  char* x = read_from_ram_and_convert_to_str(ram[line]);
+  printf("The instruction: %s\n",x);
+  write_int_into_register(z,IR);
+  line++;
+  write_int_into_register(line,PC);
+} 
+
+Data decode(){
+  printf("I am currently Decoding 👨🏿‍💻, (instruction: %s = %d)\n",read_from_ram_and_convert_to_str(&IR),read_from_register_and_convert_to_int(IR));
+  char opcd[5];
+  for(int i=0;i<4;i++){
+    opcd[i]= IR[i]+'0';
+  }
+  opcd[4]='\0';
+  int q = (unsigned int)strtoul(opcd, NULL, 2);
+  printf("The OPCODE of instruction being decoded is %s = %d\n",opcd,q);
+  Data d = initD();
+  if (q == 0 || q == 1 || q == 2 || q == 5 || q == 8 || q == 9) {
+    char Regs1[6];
+    char Regs2[6];
+    char Regs3[6];
+    char SHA[14];
+    for(int i=0;i<5;i++){
+      Regs1[i]= IR[4+i]+'0';
+    }
+    Regs1[5]='\0';
+    for(int i=0;i<5;i++){
+      Regs2[i]= IR[9+i]+'0';
+    }
+    Regs2[5]='\0';
+    for(int i=0;i<5;i++){
+      Regs3[i]= IR[14+i]+'0';
+    }
+    Regs3[5]='\0';
+    for(int i=0;i<13;i++){
+      SHA[i]= IR[19+i]+'0';
+    }
+    SHA[13]='\0';
+    int w = (unsigned int)strtoul(Regs1, NULL, 2);
+    int e = (unsigned int)strtoul(Regs2, NULL, 2);
+    int r = (unsigned int)strtoul(Regs3, NULL, 2);
+    int t = (unsigned int)strtoul(SHA, NULL, 2);
+    d.opcode = q;
+    d.SHAMT = t;
+    d.R1 = get_register_by_number(w);
+    d.R2 = get_register_by_number(e);
+    d.R3 = get_register_by_number(r);
+    printf("The instruction being decoded is R-Format:\n");
+    printf("R1: reg%d\n",w);
+    printf("R2: reg%d\n",e);
+    printf("R3: reg%d\n",r);
+    printf("SHAMT: %d\n",t);
+  }
+  if (q == 3 || q == 4 || q == 6 || q == 10 || q == 11 ) {
+    char Regs1[6];
+    char Regs2[6];
+    char Im[19];
+    for(int i=0;i<5;i++){
+      Regs1[i]= IR[4+i]+'0';
+    }
+    Regs1[5]='\0';
+    for(int i=0;i<5;i++){
+      Regs2[i]= IR[9+i]+'0';
+    }
+    Regs2[5]='\0';
+    for(int i=0;i<18;i++){
+      Im[i]= IR[14+i]+'0';
+    }
+    Im[18]='\0';
+    int w = (unsigned int)strtoul(Regs1, NULL, 2);
+    int e = (unsigned int)strtoul(Regs2, NULL, 2);
+    int r = (unsigned int)strtoul(Im, NULL, 2);
+    d.opcode = q;
+    d.R1 = get_register_by_number(w);
+    d.R2 = get_register_by_number(e);
+    d.IMM = get_register_by_number(r);
+    printf("The instruction being decoded is I-Format:\n");
+    printf("R1: reg%d\n",w);
+    printf("R2: reg%d\n",e);
+    printf("Immediate Value: %d\n",r);
+  }
+  if(q==7){
+    char Ad[29];
+    for(int i=0;i<28;i++){
+      Ad[i]= IR[4+i]+'0';
+    }
+    Ad[28]='\0';
+    d.opcode = q;
+    int r = (unsigned int)strtoul(Ad, NULL, 2);
+    d.ADDRESS = get_register_by_number(r);
+    printf("The instruction being decoded is J-Format:\n");
+    printf("Address: %d\n",r);
+  }
+  if(q>11){
+    printf("Oops⚠️...This instruction is not in my Instruction Set😟");
+  }
+
+  return d;
+
+
+}
+
 
 
 int main(){
@@ -424,48 +572,24 @@ int main(){
   init_queue(&exec_stage);
   init_queue(&mem_stage);
   init_queue(&WB_stage);
+  init();
 
   int x = 0b100;
-  Data a1 = initD();
-  Data a2 = initD();
-  a2.opcode = 2;
-  enqueue(&fetch_stage,a1);
-  enqueue(&fetch_stage,a2);
-  Data a3 = dequeue(&fetch_stage);
-  printf("the first data's opcode: %d\n",a3.opcode);
-  a3 = dequeue(&fetch_stage);
-  printf("the second data's opcode: %d\n",a3.opcode);
 
+  fetch();
 
+  PC[0]=1;
+  
+  IR[31]=1;
+  char* a= read_from_ram_and_convert_to_str(&IR);
 
-  printf("X: %d\n",x);
+  printf("IR: %s\n",a);
   write_int_into_register(50,R1);
   write_int_into_register(16,R2);
   write_int_into_register(-50,R4);
   
-
-  int sig = logical_shift_right(R30,R2,2);
-  int tmp1 = read_from_register_and_convert_to_int(R1);
-  int tmp2 = read_from_register_and_convert_to_int(R2);
-  int tmp3 = read_from_register_and_convert_to_int(R3);
-  int tmp4 = read_from_register_and_convert_to_int(R4);
-  int aluc = read_from_register_and_convert_to_int(ALU);
-  char* alucc = read_from_ram_and_convert_to_str(ALU);
-  int pccc = read_from_register_and_convert_to_int(PC);
-  char* pcc = read_from_ram_and_convert_to_str(PC);
-
-
-  printf("Content of register1: %d\n",tmp1);
-  printf("Content of register2: %d\n",tmp2);
-  printf("Content of register3: %d\n",tmp3);
-  printf("Content of register4: %d\n",tmp4);
-  printf("Content of ALU: %d\n",aluc);
-  printf("Content of ALU: %s\n",alucc);
-  printf("Content of Sig: %d\n",sig);
-  printf("Content of PC: %s\n",pcc);
-  printf("Content of PC: %d\n",pccc);
-
-
+  write_int_into_register(-1065484287,IR);
+  decode();
 
   return 0;
 
