@@ -41,6 +41,7 @@ and zero means that value is already updated in PC so it is a jump instruction.
         }
         execution_Result[2] = 0; 
     }
+
     //in memory stage
     if(memoryRead == 1){  
         answer = R2 + R3;
@@ -57,6 +58,7 @@ and zero means that value is already updated in PC so it is a jump instruction.
     if(registerWrite == 1){
         execution_Result[2] = 1;
     }
+
     for(int i = 0; i<2; i++){
         if(shft[i] == 1){
             char * instruction = "";
