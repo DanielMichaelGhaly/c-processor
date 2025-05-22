@@ -80,10 +80,11 @@ typedef struct {
     int SHAMT;
     int IMM;
     int ADDRESS;
+    char* inst;
 } Data;
 
 Data initD(){
-  Data r = {-1,-1,-1,R0,R0,R0,-1,-1,-1};
+  Data r = {-1,-1,-1,R0,R0,R0,-1,-1,-1,"00000000000000000000000000000000"};
   return r;
 }
 
@@ -200,9 +201,13 @@ int add(int R1[32], int R2[32], int R3[32]){
   int tmp1 = 0;
   int tmp2 = read_from_register_and_convert_to_int(R2);
   int tmp3 = read_from_register_and_convert_to_int(R3);
-
   tmp1 = tmp2 + tmp3;
+  printf("I am currently adding content of Regs%d with content of Regs%d which will be saved later in Regs%d\n",get_register_number(R2),get_register_number(R3),get_register_number(R1));
+  printf("Contents of the Registers: \n");
+  printf("Reg%d: %d\n",get_register_number(R2),tmp2);
+  printf("Reg%d: %d\n",get_register_number(R3),tmp3);
   write_int_into_register(tmp1,ALU);
+  printf("Now the ALU is: %d\n",tmp1);
   return (get_register_number(R1));
 }
 
@@ -212,8 +217,13 @@ int subtract(int R1[32], int R2[32], int R3[32]){
   int tmp2 = read_from_register_and_convert_to_int(R2);
   int tmp3 = read_from_register_and_convert_to_int(R3);
 
+  printf("I am currently subtracting content of Regs%d with content of Regs%d which will be saved later in Regs%d\n",get_register_number(R2),get_register_number(R3),get_register_number(R1));
+  printf("Contents of the Registers: \n");
+  printf("Reg%d: %d\n",get_register_number(R2),tmp2);
+  printf("Reg%d: %d\n",get_register_number(R3),tmp3);
   tmp1 = tmp2 - tmp3;
   write_int_into_register(tmp1,ALU);
+  printf("Now the ALU is: %d\n",tmp1);
   return (get_register_number(R1));
 }
 
@@ -222,9 +232,13 @@ int multiply(int R1[32], int R2[32], int R3[32]){
   int tmp1 = 0;
   int tmp2 = read_from_register_and_convert_to_int(R2);
   int tmp3 = read_from_register_and_convert_to_int(R3);
-
+  printf("I am currently multiplying content of Regs%d with content of Regs%d which will be saved later in Regs%d\n",get_register_number(R2),get_register_number(R3),get_register_number(R1));
+  printf("Contents of the Registers: \n");
+  printf("Reg%d: %d\n",get_register_number(R2),tmp2);
+  printf("Reg%d: %d\n",get_register_number(R3),tmp3);
   tmp1 = tmp2 * tmp3;
   write_int_into_register(tmp1,ALU);
+  printf("Now the ALU is: %d\n",tmp1);
   return (get_register_number(R1));
 }
 
@@ -233,7 +247,10 @@ int move_immediate(int R1[32], int IMM){
   int tmp0 = read_from_register_and_convert_to_int(R0);
   int tmp1 = IMM;
   int res = tmp0+tmp1;
+  printf("I am currently putting the content of Immediate into ALU which will be saved later in Regs%d\n",get_register_number(R1));
+  printf("Immediate Value: %d\n",tmp1);
   write_int_into_register(res,ALU);
+  printf("Now the ALU is: %d\n",tmp1);
   return get_register_number(R1);
 
   
@@ -251,7 +268,13 @@ int jump_if_equal(int R1[32], int R2[32], int IMM){
   else{
     res = pctmp;
   }
+  printf("I am currently checking if the content of Regs%d is equal to the content of Regs%d, jump to immediate address\n",get_register_number(R1),get_register_number(R2));
+  printf("Contents of the Registers: \n");
+  printf("Reg%d: %d\n",get_register_number(R1),tmp1);
+  printf("Reg%d: %d\n",get_register_number(R2),tmp2);
+  printf("Immediate Value: %d\n",IMM);
   write_int_into_register(res,ALU);
+  printf("Now the ALU is: %d\n",res);
   return get_register_number(PC);
 
 }
@@ -262,9 +285,13 @@ int and(int R1[32], int R2[32], int R3[32]){
   int tmp3 = read_from_register_and_convert_to_int(R3);
   int res = 0;
   res = tmp2 & tmp3;
+  printf("I am currently Anding content of Regs%d with content of Regs%d which will be saved later in Regs%d\n",get_register_number(R2),get_register_number(R3),get_register_number(R1));
+  printf("Contents of the Registers: \n");
+  printf("Reg%d: %d\n",get_register_number(R2),tmp2);
+  printf("Reg%d: %d\n",get_register_number(R3),tmp3);
   write_int_into_register(res,ALU);
+  printf("Now the ALU is: %d\n",res);
   return get_register_number(R1);
-
 
 }
 
@@ -273,7 +300,12 @@ int exclusive_or_immediate(int R1[32], int R2[32], int IMM){
   int tmp1 = read_from_register_and_convert_to_int(R2);
   int res = 0;
   res = tmp1 ^ IMM;
+  printf("I am currently XORing the content of Regs%d with Immediate, which will be stored in Regs%d later\n",get_register_number(R2),get_register_number(R1));
+  printf("Contents of the Registers: \n");
+  printf("Reg%d: %d\n",get_register_number(R2),tmp1);
+  printf("Immediate Value: %d\n",IMM);
   write_int_into_register(res,ALU);
+  printf("Now the ALU is: %d\n",res);
   return get_register_number(R1);
 }
 
@@ -294,7 +326,9 @@ int jump(int ADDRESS){
   res = convert_from_binary_string_to_int(result);
   free(one);
   //free(two);
+  printf("We will Jump the PC by some factor(Address = %d)\n",ADDRESS);
   write_int_into_register(res,ALU);
+  printf("Now the ALU is: %d\n",res);
   return get_register_number(PC);
   
 }
@@ -304,7 +338,11 @@ int logical_shift_left(int R1[32], int R2[32], int SHAMT){
     int tmp2 = read_from_register_and_convert_to_int(R2);
     int res = tmp2 << SHAMT;
 
+    printf("I am currently logically shifting Left the content of Regs%d with shift amount of %d which will be saved later in Regs%d\n",get_register_number(R2),SHAMT,get_register_number(R1));
+    printf("Contents of the Registers: \n");
+    printf("Reg%d: %d\n",get_register_number(R2),tmp2);
     write_int_into_register(res,ALU); 
+    printf("Now the ALU is: %d\n",res);
     return get_register_number(R1);
 }
 
@@ -314,38 +352,44 @@ int logical_shift_right(int R1[32], int R2[32], int SHAMT){
   unsigned int ua = (unsigned int)tmp2;
   unsigned int result = ua >> SHAMT;
 
+  printf("I am currently logically shifting Right the content of Regs%d with shift amount of %d which will be saved later in Regs%d\n",get_register_number(R2),SHAMT,get_register_number(R1));
+  printf("Contents of the Registers: \n");
+  printf("Reg%d: %d\n",get_register_number(R2),tmp2);
   write_int_into_register(result,ALU); 
+  printf("Now the ALU is: %d\n",result);
   return get_register_number(R1);
 }
 
 //11. MOVR: (done)
-void move_to_register(int R1[32], int R2[32], int IMM){
+int move_to_register(int R1[32], int R2[32], int IMM){
   int tmp2 = read_from_register_and_convert_to_int(R2);
   int res = tmp2 + IMM;
-  write_int_into_register(res,AR);
-
+  write_int_into_register(res,ALU);
+  printf("Now i am calculating the address of Memory that will be accessed: content of Regs%d + Immediate: %d which will then be stored in Regs%d\n",get_register_number(R2),IMM,get_register_number(R1));
+  printf("Contents of the Registers: \n");
+  printf("Reg%d: %d\n",get_register_number(R2),tmp2);
+  printf("Now the ALU is: %d\n",res);
   return get_register_number(R1);
 
 }
-
 
 //12. MOVM:
-void move_to_memory(int R1[32], int R2[32], int IMM){
+int move_to_memory(int R1[32], int R2[32], int IMM){
   int tmp2 = read_from_register_and_convert_to_int(R2);
   int res = tmp2 + IMM;
 
-  write_int_into_register(res,AR);
+  printf("I am now calculating the address of the memory (Content of Regs%d + Immediate: %d) in which the content of Regs%d will be saved \n",get_register_number(R2),IMM,get_register_number(R1));
+  write_int_into_register(res,ALU);
+  printf("Now the ALU is: %d\n",res);
   return get_register_number(R1);
 
 }
-
 
 
 
 void init(){
   ram_initialize();
 }
-
 
 
 
@@ -479,6 +523,7 @@ Data decode(){
   int q = (unsigned int)strtoul(opcd, NULL, 2);
   printf("The OPCODE of instruction being decoded is %s = %d\n",opcd,q);
   Data d = initD();
+  d.inst = read_from_ram_and_convert_to_str(&IR);
   if (q == 0 || q == 1 || q == 2 || q == 5 || q == 8 || q == 9) {
     char Regs1[6];
     char Regs2[6];
@@ -556,14 +601,89 @@ Data decode(){
     printf("Address: %d\n",r);
   }
   if(q>11){
-    printf("Oops⚠️...This instruction is not in my Instruction Set😟");
+    printf("Oops⚠️...This instruction is not in my Instruction Set😟\n");
   }
 
   return d;
+}
 
+Data execute(Data d){
+  printf("I am Currently executing ⚙️ (instruction: %s)\n",d.inst);
+  int z = 0;
+  switch (d.opcode) {
+        case 0:  
+          z = add(d.R1,d.R2,d.R3);
+          d.exec = read_from_register_and_convert_to_int(ALU);
+          d.sig = z;
+          break;
+        case 1:  
+          z = subtract(d.R1,d.R2,d.R3);
+          d.exec = read_from_register_and_convert_to_int(ALU);
+          d.sig = z;
+          break; 
+        case 2: 
+          z = multiply(d.R1,d.R2,d.R3);
+          d.exec = read_from_register_and_convert_to_int(ALU);
+          d.sig = z;
+          break; 
+        case 3:  
+          z = move_immediate(d.R1,d.IMM);
+          d.exec = read_from_register_and_convert_to_int(ALU);
+          d.sig = z;
+          break; 
+        case 4:
+          z = jump_if_equal(d.R1,d.R2,d.IMM);
+          d.exec = read_from_register_and_convert_to_int(ALU);
+          d.sig = z;
+          break; 
+        case 5: 
+          z = and(d.R1,d.R2,d.R3);
+          d.exec = read_from_register_and_convert_to_int(ALU);
+          d.sig = z;
+          break; 
+        case 6:  
+          z = exclusive_or_immediate(d.R1,d.R2,d.IMM);
+          d.exec = read_from_register_and_convert_to_int(ALU);
+          d.sig = z;
+          break; 
+        case 7: 
+          z = jump(d.ADDRESS);
+          d.exec = read_from_register_and_convert_to_int(ALU);
+          d.sig = z;
+          break; 
+        case 8:  
+          z = logical_shift_left(d.R1,d.R2,d.SHAMT);
+          d.exec = read_from_register_and_convert_to_int(ALU);
+          d.sig = z;
+          break; 
+        case 9:  
+          z = logical_shift_right(d.R1,d.R2,d.SHAMT);
+          d.exec = read_from_register_and_convert_to_int(ALU);
+          d.sig = z;
+          break; 
+        case 10: 
+          z = move_to_register(d.R1,d.R2,d.IMM);
+          d.exec = read_from_register_and_convert_to_int(ALU);
+          d.sig = z;
+          break; 
+        case 11:
+          z = move_to_memory(d.R1,d.R2,d.IMM);
+          d.exec = read_from_register_and_convert_to_int(ALU);
+          d.sig = z;
+          break; 
+        default: printf("Invalid Opcode\n");// Invalid register number
+    }
+    return d;
 
 }
 
+/*void Memory(Data d){
+  printf("I am Currently in the memory phase 📝 (instruction: %s)\n",d.inst);
+  if(){
+
+  }
+}
+*/
 
 
 int main(){
@@ -576,20 +696,18 @@ int main(){
 
   int x = 0b100;
 
-  fetch();
-
-  PC[0]=1;
-  
-  IR[31]=1;
-  char* a= read_from_ram_and_convert_to_str(&IR);
-
-  printf("IR: %s\n",a);
   write_int_into_register(50,R1);
-  write_int_into_register(16,R2);
+  write_int_into_register(10,R2);
   write_int_into_register(-50,R4);
-  
-  write_int_into_register(-1065484287,IR);
-  decode();
+  move_to_memory(R4,R7,12);
+
+  Data d = initD();
+  d.opcode = 9;
+  d.R1 = R7;
+  d.R2 = R1;
+  d.R3 = R2;
+  d.SHAMT = 17;
+  execute(d);
 
   return 0;
 
