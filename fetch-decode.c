@@ -3,21 +3,48 @@
 #include "queue.h"
 #include "fetch-decode.h"
 
-int pc = 0;
+int r1[5] = {0,0,0,0,0};
+int r2[5] = {0,0,0,0,0};
+int r3[5] = {0,0,0,0,0};
+int shamt[13] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
+int immediate[18] = {0};
+int address[28] = {0};
+
+int ALUsig[5] = {0,0,0,0,0};
+int shift[2] = {0,0};
+int memR = 0;   
+int memW = 0;
+int regW = 0;
+int branch = 0;
 //queues for the pipeline they are latter initialized in the individual functions
 Queue *fetch_queue;
 Queue *decode_queue;
 
-ControlSignals ctrl;
-DecodedFields df;
+//ControlSignals ctrl;
+//DecodedFields df;
 
-int pc_incr(int* pc){
-    return pc += 1 ;
+int * pc_incr(int* pc){
+    return converting_dnigga(converting_bnigga((pc,32)+1));
+}
+
+int * converting_dnigga(int value, int *arr) {
+    for (int i = 0; i < 32; ++i) {
+        arr[i] = (value >> (31 - i)) & 1;
+    }
+    return arr;
 }
 
 
+int converting_bnigga(int *arr,int n) {
+    int value = 0;
+    for (int i = 0; i < n; ++i) {
+        value |= (arr[i] & 1) << (n-1 - i);
+    }
+    return value;
+}
+
 void fetch(int* pc){
-    int instr = read_from_memory(read_from_register(pc)); // read instruction from memory
+    int *IR = memory[(converting_bnigga(pc,32))]; // read instruction from memory and place in the IR
     pc_incr(pc); 
     // append instruction to fetch queue
     initQueue(fetch_queue);
@@ -108,18 +135,46 @@ void decode(){
 }
 
 
-void reset_control_signals(void) {
-    for(int i = 0; i < 5; ++i) ctrl.ALUsig[i] = 0;
-    for(int i = 0; i < 2; ++i) ctrl.shift[i]  = 0;
-    ctrl.memR   = 0;
-    ctrl.memW   = 0;
-    ctrl.regW   = 0;
-    ctrl.branch = 0;
+// void reset_control_signals(void) {
+//     for(int i = 0; i < 5; ++i) ctrl.ALUsig[i] = 0;
+//     for(int i = 0; i < 2; ++i) ctrl.shift[i]  = 0;
+//     ctrl.memR   = 0;
+//     ctrl.memW   = 0;
+//     ctrl.regW   = 0;
+//     ctrl.branch = 0;
+// }
+
+// void reset_decoded_fields(void) {
+//     df.r1 = df.r2 = df.r3 = 0;
+//     df.shamt = 0;
+//     df.immediate = 0;
+//     df.address = 0;
+// }
+
+// call to get the value of the register
+int access_register_file(int * reg_num) {
+    int * data = register_file[converting_bnigga(reg_num,5)];
+    int reg = converting_bnigga(data,32); 
+    return reg;
 }
 
-void reset_decoded_fields(void) {
-    df.r1 = df.r2 = df.r3 = 0;
-    df.shamt = 0;
-    df.immediate = 0;
-    df.address = 0;
+void Mem_nigga(int * data, int * address, int memW, int memR) {
+    if (memW == 0 && memR == 0) {
+        return;
+    }
+    if (memR) {
+        int * mem_data = memory[converting_bnigga(address,32)];
+        for (int i = 0; i < 32; ++i) {
+            data[i] = mem_data[i];
+        }
+    }
+    if (memW) {
+        memory[converting_bnigga(address,32)] = converting_dnigga(data,32);
+    }
+}
+
+void write_back(int * data, int * reg_num, int regW) {
+    if (regW) {
+        register_file[converting_bnigga(reg_num,5)] = converting_dnigga(data,32);
+    }
 }
