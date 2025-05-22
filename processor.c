@@ -266,7 +266,7 @@ int jump_if_equal(int R1[32], int R2[32], int IMM){
     res = pctmp + IMM;
   }
   else{
-    res = pctmp;
+    res = -1;
   }
   printf("I am currently checking if the content of Regs%d is equal to the content of Regs%d, jump to immediate address\n",get_register_number(R1),get_register_number(R2));
   printf("Contents of the Registers: \n");
@@ -275,7 +275,7 @@ int jump_if_equal(int R1[32], int R2[32], int IMM){
   printf("Immediate Value: %d\n",IMM);
   write_int_into_register(res,ALU);
   printf("Now the ALU is: %d\n",res);
-  return get_register_number(PC);
+  return res;
 
 }
 
@@ -321,7 +321,6 @@ int jump(int ADDRESS){
   one[4] = '\0';
   char result[32];
   strcpy(result, one);  
-  printf("result: %s\n",result);
   strcat(result, int_to_28bit_binary(ADDRESS));
   res = convert_from_binary_string_to_int(result);
   free(one);
@@ -381,7 +380,7 @@ int move_to_memory(int R1[32], int R2[32], int IMM){
   printf("I am now calculating the address of the memory (Content of Regs%d + Immediate: %d) in which the content of Regs%d will be saved \n",get_register_number(R2),IMM,get_register_number(R1));
   write_int_into_register(res,ALU);
   printf("Now the ALU is: %d\n",res);
-  return get_register_number(R1);
+  return read_from_register_and_convert_to_int(R1);
 
 }
 
@@ -523,6 +522,7 @@ Data decode(){
   int q = (unsigned int)strtoul(opcd, NULL, 2);
   printf("The OPCODE of instruction being decoded is %s = %d\n",opcd,q);
   Data d = initD();
+  d.opcode = q;
   d.inst = read_from_ram_and_convert_to_str(&IR);
   if (q == 0 || q == 1 || q == 2 || q == 5 || q == 8 || q == 9) {
     char Regs1[6];
@@ -596,7 +596,7 @@ Data decode(){
     Ad[28]='\0';
     d.opcode = q;
     int r = (unsigned int)strtoul(Ad, NULL, 2);
-    d.ADDRESS = get_register_by_number(r);
+    d.ADDRESS = r;
     printf("The instruction being decoded is J-Format:\n");
     printf("Address: %d\n",r);
   }
@@ -648,6 +648,7 @@ Data execute(Data d){
           break; 
         case 7: 
           z = jump(d.ADDRESS);
+        
           d.exec = read_from_register_and_convert_to_int(ALU);
           d.sig = z;
           break; 
@@ -677,13 +678,72 @@ Data execute(Data d){
 
 }
 
-/*void Memory(Data d){
+Data Memory(Data d){
   printf("I am Currently in the memory phase 📝 (instruction: %s)\n",d.inst);
-  if(){
-
+  if(d.opcode == 10){
+     printf("I have now accessed Ram[%d]\n",d.exec);
+     int z = read_from_ram_and_convert_to_int(ram[d.exec]);
+     d.exec = z;
   }
+  else if(d.opcode == 11){
+    printf("I have now accessed Ram[%d]\n",d.exec);
+    printf("I have now inserted the value of %d into that memory place\n",d.sig);
+    write_int_into_register(d.sig,ram[d.exec]) ;   
+    printf("We are now done with instruction %s\n",d.inst);
+  }
+  else{
+    printf("This instruction doesn't want to access the RAM 🤷‍♂️\n");
+  }
+  return d;
 }
-*/
+
+
+void write_back(Data d){
+  printf("I am currently in the write-back phase ⬅️ (instruction: %s)\n",d.inst);
+  switch(d.opcode){
+    case 0:
+    case 1: 
+    case 2: 
+    case 3: 
+    case 5:
+    case 6:
+    case 8:
+    case 9:
+    case 10: 
+      printf("The register that is being modified is Regs%d \n",d.sig);
+      printf("Regs%d before: %d\n",d.sig,read_from_register_and_convert_to_int(get_register_by_number(d.sig)));
+      write_int_into_register(d.exec,get_register_by_number(d.sig));
+      printf("Regs%d after: %d\n",d.sig,d.exec);
+      break;
+    case 4:
+      if(d.sig == -1){
+        printf("No jumping... PC will not be modified\n");
+        break;
+      }
+      else{
+        printf("The register that is being modified is the PC\n");
+        printf("PC before: %d\n",read_from_register_and_convert_to_int(PC));
+        write_int_into_register(d.exec,PC);
+        printf("PC after: %d\n",d.exec);
+        break;
+      }
+    case 7: 
+      printf("The register that is being modified is the PC\n");
+      printf("PC before: %d\n",read_from_register_and_convert_to_int(PC));
+      write_int_into_register(d.exec,PC);
+      printf("PC after: %d\n",d.exec);
+      break;
+    case 11:
+      printf("This instruction was already finished from the memory phase\n");
+      break;
+    default: 
+      printf("I dont seem to understand this instruction 🤔...Ohh its not in my ISA\n");
+  }
+  printf("We are now done with instruction %s 🥳\n",d.inst);
+
+
+
+}
 
 
 int main(){
@@ -699,15 +759,19 @@ int main(){
   write_int_into_register(50,R1);
   write_int_into_register(10,R2);
   write_int_into_register(-50,R4);
-  move_to_memory(R4,R7,12);
+  write_int_into_register(10,ram[0]);
+  write_int_into_register(1879048202,ram[0]);
+  fetch();
+  Data d;
+  Data e;
+  Data m;
+  d = decode();
+  e = execute(d);
+  m = Memory(e);
+  write_back(m);
 
-  Data d = initD();
-  d.opcode = 9;
-  d.R1 = R7;
-  d.R2 = R1;
-  d.R3 = R2;
-  d.SHAMT = 17;
-  execute(d);
+
+
 
   return 0;
 
