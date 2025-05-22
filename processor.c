@@ -753,24 +753,45 @@ int main(){
   init_queue(&mem_stage);
   init_queue(&WB_stage);
   init();
+  
 
   int x = 0b100;
 
   write_int_into_register(50,R1);
   write_int_into_register(10,R2);
   write_int_into_register(-50,R4);
-  write_int_into_register(10,ram[0]);
-  write_int_into_register(1879048202,ram[0]);
-  fetch();
-  Data d;
-  Data e;
-  Data m;
-  d = decode();
-  e = execute(d);
-  m = Memory(e);
-  write_back(m);
+  printf("jdska\n");
+  Data d = decode();
+  printf("tester %d\n",get_register_number(d.R1));
+
+  /*for(int i=0;i<5;i++){
+    clk_cycle ++;
+    printf("Cycle Num: %d\n",clk_cycle);
+    if(clk_cycle % 2 != 0){
+      fetch();
+      if(isEmpty(&mem_stage)==0){
+        write_back(dequeue(&mem_stage));
+      }
+
+    }
+    else{
+      Data d = decode();
+      enqueue(&decode_stage,d);
+      if(clk_cycle>2){
+        Data e = execute(dequeue(&decode_stage));
+        enqueue(&exec_stage,e);
+        if(clk_cycle>4){
+          Data m = Memory(dequeue(&exec_stage));
+          enqueue(&mem_stage,m);
+        }
+      }
 
 
+    }
+  //sleep(2);
+  
+  }
+*/
 
 
   return 0;
