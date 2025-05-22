@@ -74,9 +74,9 @@ typedef struct {
     int opcode;
     int sig;
     int exec;
-    int* R1;
-    int* R2;
-    int* R3;
+    int R1;
+    int R2;
+    int R3;
     int SHAMT;
     int IMM;
     int ADDRESS;
@@ -84,7 +84,7 @@ typedef struct {
 } Data;
 
 Data initD(){
-  Data r = {-1,-1,-1,R0,R0,R0,-1,-1,-1,"00000000000000000000000000000000"};
+  Data r = {-1,-1,-1,0,0,0,-1,-1,-1,"00000000000000000000000000000000"};
   return r;
 }
 
@@ -178,6 +178,7 @@ int get_register_number(int* arr) {
     else if (arr == R30) return 30;
     else if (arr == R31) return 31;
     else if (arr == PC) return 0;
+    else if (arr == R0) return 0;
     else return -1;  // Not a known register
 }
 
@@ -551,9 +552,9 @@ Data decode(){
     int t = (unsigned int)strtoul(SHA, NULL, 2);
     d.opcode = q;
     d.SHAMT = t;
-    d.R1 = get_register_by_number(w);
-    d.R2 = get_register_by_number(e);
-    d.R3 = get_register_by_number(r);
+    d.R1 = w;
+    d.R2 = e;
+    d.R3 = r;
     printf("The instruction being decoded is R-Format:\n");
     printf("R1: reg%d\n",w);
     printf("R2: reg%d\n",e);
@@ -578,11 +579,11 @@ Data decode(){
     Im[18]='\0';
     int w = (unsigned int)strtoul(Regs1, NULL, 2);
     int e = (unsigned int)strtoul(Regs2, NULL, 2);
-    int r = (unsigned int)strtoul(Im, NULL, 2);
+    int r = (unsigned int)strtoul(Im, NULL, 2); //only positive :(
     d.opcode = q;
-    d.R1 = get_register_by_number(w);
-    d.R2 = get_register_by_number(e);
-    d.IMM = get_register_by_number(r);
+    d.R1 = w;
+    d.R2 = e;
+    d.IMM = r;
     printf("The instruction being decoded is I-Format:\n");
     printf("R1: reg%d\n",w);
     printf("R2: reg%d\n",e);
@@ -607,100 +608,103 @@ Data decode(){
   return d;
 }
 
-Data execute(Data d){
-  printf("I am Currently executing ⚙️ (instruction: %s)\n",d.inst);
+Data execute(Data* d){
+  printf("I am Currently executing ⚙️ (instruction: %s)\n",d->inst);
   int z = 0;
-  switch (d.opcode) {
+  switch (d->opcode) {
         case 0:  
-          z = add(d.R1,d.R2,d.R3);
-          d.exec = read_from_register_and_convert_to_int(ALU);
-          d.sig = z;
+          z = add(get_register_by_number(d->R1),get_register_by_number(d->R2),get_register_by_number(d->R3));
+          d->exec = read_from_register_and_convert_to_int(ALU);
+          d->sig = z;
           break;
         case 1:  
-          z = subtract(d.R1,d.R2,d.R3);
-          d.exec = read_from_register_and_convert_to_int(ALU);
-          d.sig = z;
+          z = subtract(get_register_by_number(d->R1),get_register_by_number(d->R2),get_register_by_number(d->R3));
+          d->exec = read_from_register_and_convert_to_int(ALU);
+          d->sig = z;
           break; 
         case 2: 
-          z = multiply(d.R1,d.R2,d.R3);
-          d.exec = read_from_register_and_convert_to_int(ALU);
-          d.sig = z;
+          z = multiply(get_register_by_number(d->R1),get_register_by_number(d->R2),get_register_by_number(d->R3));
+          d->exec = read_from_register_and_convert_to_int(ALU);
+          d->sig = z;
           break; 
         case 3:  
-          z = move_immediate(d.R1,d.IMM);
-          d.exec = read_from_register_and_convert_to_int(ALU);
-          d.sig = z;
+          z = move_immediate(get_register_by_number(d->R1),d->IMM);
+          d->exec = read_from_register_and_convert_to_int(ALU);
+          d->sig = z;
           break; 
         case 4:
-          z = jump_if_equal(d.R1,d.R2,d.IMM);
-          d.exec = read_from_register_and_convert_to_int(ALU);
-          d.sig = z;
+          z = jump_if_equal(get_register_by_number(d->R1),get_register_by_number(d->R2),d->IMM);
+          d->exec = read_from_register_and_convert_to_int(ALU);
+          d->sig = z;
           break; 
         case 5: 
-          z = and(d.R1,d.R2,d.R3);
-          d.exec = read_from_register_and_convert_to_int(ALU);
-          d.sig = z;
+          z = and(get_register_by_number(d->R1),get_register_by_number(d->R2),get_register_by_number(d->R3));
+          d->exec = read_from_register_and_convert_to_int(ALU);
+          d->sig = z;
           break; 
         case 6:  
-          z = exclusive_or_immediate(d.R1,d.R2,d.IMM);
-          d.exec = read_from_register_and_convert_to_int(ALU);
-          d.sig = z;
+          z = exclusive_or_immediate(get_register_by_number(d->R1),get_register_by_number(d->R2),d->IMM);
+          d->exec = read_from_register_and_convert_to_int(ALU);
+          d->sig = z;
           break; 
         case 7: 
-          z = jump(d.ADDRESS);
-        
-          d.exec = read_from_register_and_convert_to_int(ALU);
-          d.sig = z;
+          z = jump(d->ADDRESS);
+          d->exec = read_from_register_and_convert_to_int(ALU);
+          d->sig = z;
           break; 
         case 8:  
-          z = logical_shift_left(d.R1,d.R2,d.SHAMT);
-          d.exec = read_from_register_and_convert_to_int(ALU);
-          d.sig = z;
+          z = logical_shift_left(get_register_by_number(d->R1),get_register_by_number(d->R2),d->SHAMT);
+          d->exec = read_from_register_and_convert_to_int(ALU);
+          d->sig = z;
           break; 
         case 9:  
-          z = logical_shift_right(d.R1,d.R2,d.SHAMT);
-          d.exec = read_from_register_and_convert_to_int(ALU);
-          d.sig = z;
+          z = logical_shift_right(get_register_by_number(d->R1),get_register_by_number(d->R2),d->SHAMT);
+          d->exec = read_from_register_and_convert_to_int(ALU);
+          d->sig = z;
           break; 
         case 10: 
-          z = move_to_register(d.R1,d.R2,d.IMM);
-          d.exec = read_from_register_and_convert_to_int(ALU);
-          d.sig = z;
+          z = move_to_register(get_register_by_number(d->R1),get_register_by_number(d->R2),d->IMM);
+          d->exec = read_from_register_and_convert_to_int(ALU);
+          d->sig = z;
           break; 
         case 11:
-          z = move_to_memory(d.R1,d.R2,d.IMM);
-          d.exec = read_from_register_and_convert_to_int(ALU);
-          d.sig = z;
+          z = move_to_memory(get_register_by_number(d->R1),get_register_by_number(d->R2),d->IMM);
+          d->exec = read_from_register_and_convert_to_int(ALU);
+          d->sig = z;
           break; 
         default: printf("Invalid Opcode\n");// Invalid register number
     }
-    return d;
+    return *d;
 
 }
 
-Data Memory(Data d){
-  printf("I am Currently in the memory phase 📝 (instruction: %s)\n",d.inst);
-  if(d.opcode == 10){
-     printf("I have now accessed Ram[%d]\n",d.exec);
-     int z = read_from_ram_and_convert_to_int(ram[d.exec]);
-     d.exec = z;
+Data Memory(Data* d){
+  printf("I am Currently in the memory phase 📝 (instruction: %s)\n",d->inst);
+  if(d->opcode == 10){
+     printf("I have now accessed Ram[%d]\n",d->exec);
+     int z = read_from_ram_and_convert_to_int(ram[d->exec]);
+     d->exec = z;
   }
-  else if(d.opcode == 11){
-    printf("I have now accessed Ram[%d]\n",d.exec);
-    printf("I have now inserted the value of %d into that memory place\n",d.sig);
-    write_int_into_register(d.sig,ram[d.exec]) ;   
-    printf("We are now done with instruction %s\n",d.inst);
+  else if(d->opcode == 11){
+    printf("I have now accessed Ram[%d]\n",d->exec);
+    printf("I have now inserted the value of %d into that memory place\n",d->sig);
+    write_int_into_register(d->sig,ram[d->exec]) ;   
+    printf("We are now done with instruction %s\n",d->inst);
   }
   else{
     printf("This instruction doesn't want to access the RAM 🤷‍♂️\n");
   }
-  return d;
+  return *d;
 }
 
 
-void write_back(Data d){
-  printf("I am currently in the write-back phase ⬅️ (instruction: %s)\n",d.inst);
-  switch(d.opcode){
+void write_back(Data* d){
+  printf("I am currently in the write-back phase ⬅️ (instruction: %s)\n",d->inst);
+  if(d->R1 == 0){
+    printf("Sorry...I cant put smth in Reg0\n");
+  }
+  else{
+  switch(d->opcode){
     case 0:
     case 1: 
     case 2: 
@@ -710,28 +714,28 @@ void write_back(Data d){
     case 8:
     case 9:
     case 10: 
-      printf("The register that is being modified is Regs%d \n",d.sig);
-      printf("Regs%d before: %d\n",d.sig,read_from_register_and_convert_to_int(get_register_by_number(d.sig)));
-      write_int_into_register(d.exec,get_register_by_number(d.sig));
-      printf("Regs%d after: %d\n",d.sig,d.exec);
+      printf("The register that is being modified is Regs%d \n",d->sig);
+      printf("Regs%d before: %d\n",d->sig,read_from_register_and_convert_to_int(get_register_by_number(d->sig)));
+      write_int_into_register(d->exec,get_register_by_number(d->sig));
+      printf("Regs%d after: %d\n",d->sig,d->exec);
       break;
     case 4:
-      if(d.sig == -1){
+      if(d->sig == -1){
         printf("No jumping... PC will not be modified\n");
         break;
       }
       else{
         printf("The register that is being modified is the PC\n");
         printf("PC before: %d\n",read_from_register_and_convert_to_int(PC));
-        write_int_into_register(d.exec,PC);
-        printf("PC after: %d\n",d.exec);
+        write_int_into_register(d->exec,PC);
+        printf("PC after: %d\n",d->exec);
         break;
       }
     case 7: 
       printf("The register that is being modified is the PC\n");
       printf("PC before: %d\n",read_from_register_and_convert_to_int(PC));
-      write_int_into_register(d.exec,PC);
-      printf("PC after: %d\n",d.exec);
+      write_int_into_register(d->exec,PC);
+      printf("PC after: %d\n",d->exec);
       break;
     case 11:
       printf("This instruction was already finished from the memory phase\n");
@@ -739,12 +743,26 @@ void write_back(Data d){
     default: 
       printf("I dont seem to understand this instruction 🤔...Ohh its not in my ISA\n");
   }
-  printf("We are now done with instruction %s 🥳\n",d.inst);
+  }
+  printf("We are now done with instruction %s 🥳\n",d->inst);
 
 
 
 }
 
+    
+void translate(Data d1, Data d2){
+  d1.opcode = d2.opcode;
+  d1.sig = d2.sig;
+  d1.exec = d2.exec;
+  d1.R1 = d2.R1;
+  d1.R2 = d2.R2;
+  d1.R3 = d2.R3;
+  d1.SHAMT = d2.SHAMT;
+  d1.IMM = d2.IMM;
+  d1.ADDRESS = d2.ADDRESS;
+  d1.inst = d2.inst;
+}
 
 int main(){
   init_queue(&fetch_stage);
@@ -753,45 +771,52 @@ int main(){
   init_queue(&mem_stage);
   init_queue(&WB_stage);
   init();
-  
-
-  int x = 0b100;
-
+  write_int_into_register(537149441,IR);
   write_int_into_register(50,R1);
   write_int_into_register(10,R2);
   write_int_into_register(-50,R4);
-  printf("jdska\n");
-  Data d = decode();
-  printf("tester %d\n",get_register_number(d.R1));
+  /*enqueue(&decode_stage,decode());
+  Data zz;
+  zz = dequeue(&decode_stage);
+  Data qq;
+  qq = execute(&zz);
+  Data yy;
+  yy = Memory(&qq);
+  write_back(&yy);
+*/
+  
 
-  /*for(int i=0;i<5;i++){
+
+  for(int i=0;i<10;i++){
     clk_cycle ++;
     printf("Cycle Num: %d\n",clk_cycle);
     if(clk_cycle % 2 != 0){
       fetch();
       if(isEmpty(&mem_stage)==0){
-        write_back(dequeue(&mem_stage));
+        Data pp = dequeue(&mem_stage);
+        write_back(&pp);
       }
 
     }
     else{
-      Data d = decode();
-      enqueue(&decode_stage,d);
+      enqueue(&decode_stage,decode());
       if(clk_cycle>2){
-        Data e = execute(dequeue(&decode_stage));
-        enqueue(&exec_stage,e);
+        Data ee = dequeue(&decode_stage);
+        Data ff = execute(&ee);
+        enqueue(&exec_stage,ff);
         if(clk_cycle>4){
-          Data m = Memory(dequeue(&exec_stage));
+          Data mm = dequeue(&exec_stage);
+          Data m = Memory(&mm);
           enqueue(&mem_stage,m);
         }
       }
 
 
     }
-  //sleep(2);
-  
+  fflush(stdout);  
+  Sleep(1000);  // Pause for 1 second
+    
   }
-*/
 
 
   return 0;
