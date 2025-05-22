@@ -3,15 +3,15 @@
 #include "queue.h"
 #include "fetch-decode.h"
 
-int r1[5] = {0,0,0,0,0};
-int r2[5] = {0,0,0,0,0};
-int r3[5] = {0,0,0,0,0};
-int shamt[13] = {0};
-int immediate[18] = {0};
-int address[28] = {0};
+int r1[5];
+int r2[5];
+int r3[5];
+int shamt[13] ;
+int immediate[18];
+int address[28];
 
-int ALUsig[5] = {0};
-int shift[2] = {0};
+int ALUsig[5];
+int shift[2];
 int memR = 0;
 int memW = 0;
 int regW = 0;
@@ -19,6 +19,14 @@ int branch = 0;
 
 Queue *fetch_queue;
 Queue *decode_queue;
+
+
+void initialize_with_zeros(int *arr, int size) {
+    for (int i = 0; i < size; i++) {
+        arr[i] = 0;
+    }
+}
+
 
 int * int_to_bin32(int value, int *arr) {
     for (int i = 0; i < 32; ++i) {
@@ -52,12 +60,15 @@ void decode() {
     enqueue(decode_queue, instr);
 
     int opcode = (instr[0] << 3) | (instr[1] << 2) | (instr[2] << 1) | instr[3];
-    int ALUsig[5] = {0};
-    int shift[2] = {0};
-    int memR = 0;
-    int memW = 0;
-    int regW = 0;
-    int branch = 0;
+    initialize_with_zeros(shift, 2);
+    initialize_with_zeros(ALUsig, 5);
+    initialize_with_zeros(shamt, 13);
+    initialize_with_zeros(immediate, 18);
+    initialize_with_zeros(address, 28);
+    memR = 0;
+    memW = 0;
+    regW = 0;
+    branch = 0;
 
     switch (opcode) {
         case 0x0: case 0x1: case 0x2: case 0x5: case 0x8: case 0x9: {
