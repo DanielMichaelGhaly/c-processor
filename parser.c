@@ -570,14 +570,21 @@ int* processLine(char line[]) {
     else{
         int value = atoi(op3);
         printf("%d\n", value);
-        int bits = 13;        // SHAMT is 13 bits wide
-        int start = 19;       // MSB goes here
+        int bits = 18;          // Number of bits to store
+        int end = 31;           // LSB at arr[31]
+        int start = 14;         // MSB at arr[14]
 
-        unsigned int uval = value & ((1 << bits) - 1);  // ensure we only keep 13 bits
-
-        for (int i = 0; i < bits; i++) {
-            arr[start + i] = (uval >> (bits - 1 - i)) & 1;
+        // Two's complement for negative numbers
+        if (value < 0) {
+            value = (1 << bits) + value;
         }
+
+        // Store from arr[31] to arr[14] (LSB → MSB)
+        for (int i = 0; i < bits; i++) {
+            arr[end - i] = value % 2;
+            value = value / 2;
+        }
+
 
 
 
