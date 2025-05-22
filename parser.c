@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-
 #include <stdio.h>
+#include "parser.h"
 
 int getInstructionType(int instruction[32]) {
     // Extract 4-bit opcode (bits 0 to 3)
@@ -522,21 +521,3 @@ int* processLine(char line[]) {
 
     return arr;
 }
-
-int main() {
-    char line[] = "JMP 5";
-    int *arr = processLine(line);
-
-    // Print first 4 bits of the instruction
-    printf("Opcode: ");
-    for (int i = 0; i < 32; i++) {
-        printf("%d", arr[i]);
-         }
-        // printf("\n");
-        // char str[] = "-45";
-        // int value = atoi(str);
-        // printf("%d\n", value);
-
-        return 0;
-    }
-
