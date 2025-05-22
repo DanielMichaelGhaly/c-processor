@@ -170,7 +170,7 @@ int* processLine(char line[]) {
     } else if (strcmp(op1, "R31") == 0) {
         arr[4]=1; arr[5]=1; arr[6]=1; arr[7]=1; arr[8]=1;
     } else {
-        printf("Invalid register: %s\n", op1);
+        printf("Invalid register3: %s\n", op1);
     }
         if (strcmp(op2, "R0") == 0) {
         arr[9]=0; arr[10]=0; arr[11]=0; arr[12]=0; arr[13]=0;
@@ -237,14 +237,18 @@ int* processLine(char line[]) {
     } else if (strcmp(op2, "R31") == 0) {
         arr[9]=1; arr[10]=1; arr[11]=1; arr[12]=1; arr[13]=1;
     } else {
-        printf("Invalid register: %s\n", op2);
+        printf("Invalid register1: %s\n", op2);
     }
 
 }
     if (type==0) {
-        char *op3 = strtok(NULL, " ");  // e.g., R3
+        char* op3 = strtok(NULL, " ");  // e.g., R3
+        printf("The character is: %c\n", op3[0]);
+        
+       
         if (op3[0] == 'R') {
-                if (strcmp(op3, "R0") == 0) {
+            
+            if (strcmp(op3, "R0") == 0) {
         arr[14]=0; arr[15]=0; arr[16]=0; arr[17]=0; arr[18]=0;
     } else if (strcmp(op3, "R1") == 0) {
         arr[14]=0; arr[15]=0; arr[16]=0; arr[17]=0; arr[18]=1;
@@ -309,7 +313,7 @@ int* processLine(char line[]) {
     } else if (strcmp(op3, "R31") == 0) {
         arr[14]=1; arr[15]=1; arr[16]=1; arr[17]=1; arr[18]=1;
     } else {
-        printf("Invalid register: %s\n", op3);
+        printf("Invalid register2: %s\n", op3);
     }
 
         }else {
@@ -397,7 +401,7 @@ int* processLine(char line[]) {
     } else if (strcmp(op1, "R31") == 0) {
         arr[4]=1; arr[5]=1; arr[6]=1; arr[7]=1; arr[8]=1;
     } else {
-        printf("Invalid register: %s\n", op1);
+        printf("Invalid register4: %s\n", op1);
     }
         char *op2 = strtok(NULL, " ");  // e.g., R2
         if (op2[0] == 'R') {
@@ -466,7 +470,7 @@ int* processLine(char line[]) {
     } else if (strcmp(op2, "R31") == 0) {
         arr[9]=1; arr[10]=1; arr[11]=1; arr[12]=1; arr[13]=1;
     } else {
-        printf("Invalid register: %s\n", op2);
+        printf("Invalid register5: %s\n", op2);
     }
 
         } else {
