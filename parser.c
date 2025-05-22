@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "parser.h"
 
-int getInstructionType(int instruction[32]) {
+int getInstructionType(int *instruction) {
     // Extract 4-bit opcode (bits 0 to 3)
     int opcode = (instruction[0] << 3) | (instruction[1] << 2) | (instruction[2] << 1) | instruction[3];
 
@@ -35,10 +35,6 @@ int getInstructionType(int instruction[32]) {
 int* processLine(char line[]) {
     static int arr[32] = {0};  // Persistent storage (not lost after return)
     char *token = strtok(line, " ");  // Get the first token
-
-
-
-
 
     if (token != NULL) {
         printf("First token: %s\n", token);  // Example: "ADD"
@@ -95,9 +91,6 @@ int* processLine(char line[]) {
             printf("Unknown instruction: %s\n", token);
         }
     }
-
-
-
 
     int type = getInstructionType(arr);
     printf("Instruction type is: %d\n", type);
