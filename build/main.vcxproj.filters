@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\DanielDesktop\GUC\3rd_year_2nd_semester\CA\c-processor\src\execution.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\DanielDesktop\GUC\3rd_year_2nd_semester\CA\c-processor\src\fetch-decode.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\DanielDesktop\GUC\3rd_year_2nd_semester\CA\c-processor\src\logger.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\DanielDesktop\GUC\3rd_year_2nd_semester\CA\c-processor\src\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\DanielDesktop\GUC\3rd_year_2nd_semester\CA\c-processor\src\parser.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\DanielDesktop\GUC\3rd_year_2nd_semester\CA\c-processor\src\queue.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\DanielDesktop\GUC\3rd_year_2nd_semester\CA\c-processor\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{932F9E6B-EA14-307F-931F-D1A0AF973CA7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

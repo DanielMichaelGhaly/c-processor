@@ -1,0 +1,3 @@
+D:/DanielDesktop/GUC/3rd_year_2nd_semester/CA/c-processor/build/CMakeFiles/main.dir
+D:/DanielDesktop/GUC/3rd_year_2nd_semester/CA/c-processor/build/CMakeFiles/ALL_BUILD.dir
+D:/DanielDesktop/GUC/3rd_year_2nd_semester/CA/c-processor/build/CMakeFiles/ZERO_CHECK.dir
