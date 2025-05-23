@@ -17,13 +17,13 @@ int total_instructions = 0;
 int clock = 0;
 
 //to read txt file
-int readFile(char * filePath)
+void readFile(char * filePath)
 {
     FILE* fp = NULL;
     errno_t res = fopen_s(&fp, filePath, "r");
     if (res != 0) {
         perror("Failed to open file");
-        return 1;
+        return;
     }
 
     char line[MAX_LINE_LEN];
@@ -47,7 +47,6 @@ int readFile(char * filePath)
             j = 0;
             i++;
         }
-        
     }
 
     fclose(fp);

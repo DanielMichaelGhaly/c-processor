@@ -18,6 +18,6 @@ Queue memory_queue;
 Queue writeBack_queue;
 
 int clock;
-int readFile(char * filePath);
+void readFile(char * filePath);
 
 #endif

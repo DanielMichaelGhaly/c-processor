@@ -45,16 +45,16 @@ int * pc_incr(int* pc) {
 }
 
 void fetch(int* pc) {
-    int *IR = memory[bin_to_int(pc, 32)];
+    int *IR = (int *) memory[bin_to_int(pc, 32)];
     pc_incr(pc);
     initQueue(&fetch_queue);
-    enqueue(&fetch_queue, *IR);
+    enqueue(&fetch_queue, IR);
 }
 
 void decode() {
     int* instr = dequeue(&fetch_queue);
     initQueue(&decode_queue);
-    enqueue(&decode_queue, *instr);
+    enqueue(&decode_queue, instr);
 
     int opcode = (instr[0] << 3) | (instr[1] << 2) | (instr[2] << 1) | instr[3];
     initialize_with_zeros(shift, 2);
@@ -69,9 +69,9 @@ void decode() {
 
     switch (opcode) {
         case 0x0: case 0x1: case 0x2: case 0x5: case 0x8: case 0x9: {
-            int local_r1 = (instr[4] << 4) | (instr[5] << 3) | (instr[6] << 2) | (instr[7] << 1) | instr[8];
-            int local_r2 = (instr[9] << 4) | (instr[10] << 3) | (instr[11] << 2) | (instr[12] << 1) | instr[13];
-            int local_r3 = (instr[14] << 4) | (instr[15] << 3) | (instr[16] << 2) | (instr[17] << 1) | instr[18];
+            int r1 = (instr[4] << 4) | (instr[5] << 3) | (instr[6] << 2) | (instr[7] << 1) | instr[8];
+            int r2 = (instr[9] << 4) | (instr[10] << 3) | (instr[11] << 2) | (instr[12] << 1) | instr[13];
+            int r3 = (instr[14] << 4) | (instr[15] << 3) | (instr[16] << 2) | (instr[17] << 1) | instr[18];
             int local_shamt = 0;
             for (int i = 0; i < 13; i++) {
                 local_shamt |= (instr[19 + i] << (12 - i));
