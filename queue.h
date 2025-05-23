@@ -7,6 +7,7 @@ typedef struct Queue{
     int items[MAX_SIZE];
     int front;
     int back;
+    int clk;
 }Queue;
 
 void initQueue(Queue *q);
