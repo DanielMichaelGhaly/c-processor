@@ -3,13 +3,10 @@
 #include <string.h>
 #include <stdint.h>
 #include <ctype.h>
-
-#define MEMORY_SIZE 2048
-#define WORD_SIZE 32
-#define MAX_LINE_LEN 100
+#include "parser.h"
 
 // Define opcodes
-const char* instruction_names[] = {
+const char* instruction_names[12] = {
     "ADD", "SUB", "MUL", "MOVI", "JEQ", "AND", "XORI",
     "JMP", "LSL", "LSR", "MOVR", "MOVM"
 };
@@ -79,28 +76,10 @@ void print_binary(int* binary) {
     printf("\n");
 }
 
-int main() {
-    FILE* fp = fopen("test.txt", "r");
-    if (!fp) {
-        perror("Failed to open file");
-        return 1;
-    }
+// int main() {
 
-    char line[MAX_LINE_LEN];
-    int binary[WORD_SIZE];
-    int line_number = 0;
-
-    while (fgets(line, sizeof(line), fp)) {
-        // Remove newline if exists
-        line[strcspn(line, "\n")] = 0;
-        parse_instruction(line, binary);
-        printf("Instruction %d: ", line_number++);
-        print_binary(binary);
-    }
-
-    fclose(fp);
-    return 0;
-}
+//     return 0;
+// }
 
 
 

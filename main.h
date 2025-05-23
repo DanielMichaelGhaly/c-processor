@@ -9,6 +9,7 @@
 
 int memory[2048][32];
 int registers[35][32];
+int total_instructions;
 
 Queue fetch_queue;
 Queue decode_queue;
@@ -27,7 +28,5 @@ int alu(char * instruction, int R1, int R2, int R3);
 int shift(char * instruction, int R1, int R2, int R3);
 
 int readFile(char * filePath);
-
-void printArr(int * arr);
 
 #endif
