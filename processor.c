@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 
-
 //Creating ram: 
 int** ram;
 
@@ -751,26 +750,14 @@ void write_back(Data* d){
 }
 
     
-void translate(Data d1, Data d2){
-  d1.opcode = d2.opcode;
-  d1.sig = d2.sig;
-  d1.exec = d2.exec;
-  d1.R1 = d2.R1;
-  d1.R2 = d2.R2;
-  d1.R3 = d2.R3;
-  d1.SHAMT = d2.SHAMT;
-  d1.IMM = d2.IMM;
-  d1.ADDRESS = d2.ADDRESS;
-  d1.inst = d2.inst;
-}
-
-int main(){
+int imain(){
   init_queue(&fetch_stage);
   init_queue(&decode_stage);
   init_queue(&exec_stage);
   init_queue(&mem_stage);
   init_queue(&WB_stage);
-  init();
+  //init();
+  printf("Test: %s\n",read_from_ram_and_convert_to_str(ram[0]));
   write_int_into_register(537149441,IR);
   write_int_into_register(50,R1);
   write_int_into_register(10,R2);
@@ -815,7 +802,7 @@ int main(){
     }
   fflush(stdout);  
   Sleep(1000);  // Pause for 1 second
-    
+
   }
 
 
