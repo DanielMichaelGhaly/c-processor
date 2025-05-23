@@ -42,7 +42,7 @@ void printArr(int * processInstruction)
     printf("\n");
 }
 
-int main()
-{
-    readFile("test.txt");
-}
+// int main()
+// {
+//     readFile("test.txt");
+// }
