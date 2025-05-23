@@ -36,6 +36,7 @@ void readFile(char * filePath)
         // Remove newline if exists
         line[strcspn(line, "\n")] = 0;
         parse_instruction(line, binary);
+        total_instructions++;
         // printf("Instruction %d: ", line_number++);
         // print_binary(binary);
         if(i<1024)

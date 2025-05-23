@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "execution.h"
-
+#include "main.h"
+#include "fetch-decode.h"
 int bits_to_int(const int *bits, int len) {
     int val = 0;
     for (int i = 0; i < len; ++i) {
@@ -37,8 +38,12 @@ int* execute(int ALU[], int branch,int shft[], int R1[], int R2[], int R3[]) {
     }
     if(branch > 0) {
         switch(branch) {
-            case 1: pc = r1_val; break;
-            case 2: if(r1_val == r2_val) { pc = pc + 1 + r3_val; } break;
+            case 1: int_to_bin32(r1_val, &registers[32]); break;
+            case 2: if(r1_val == r2_val) { 
+                pc_incr(&registers[32]);
+                int temp_pc_val = bits_to_int(&registers[32], 32);
+                int_to_bin32(temp_pc_val+r3_val, &registers[32]);
+            } break;
         }
         execution_Result[2] = 0;
     }

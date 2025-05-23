@@ -8,7 +8,7 @@
 */
 
 int memory[2048][32];
-int registers[35][32];
+extern int registers[35][32];
 int total_instructions;
 
 Queue fetch_queue;

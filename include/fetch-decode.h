@@ -20,9 +20,22 @@ typedef struct {
 } DecodedFields;
 
 
-// Initialize or reset control signals
-void reset_control_signals(void);
-// Initialize or reset decoded fields
-void reset_decoded_fields(void);
+void initialize_with_zeros(int *arr, int size);
+
+int * int_to_bin32(int value, int *arr);
+
+int bin_to_int(int *arr, int n);
+
+int * pc_incr(int* pc);
+
+void fetch(int* pc);
+
+void decode();
+
+int access_register_file(int * reg_num);
+
+void memory_access(int * address, int * data, int memR, int memW);
+
+void write_back(int * data, int * address, int regW);
 
 #endif
