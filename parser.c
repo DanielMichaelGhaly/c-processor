@@ -650,13 +650,13 @@ int* processLine(char line[]) {
 
 int main() {
     char line1[] = "JEQ R1 R2 5";
-    // char line2[] = "MOVI R3 5";
-    // char line3[] = "ADD R1 R2 R3";
-    // char line4[] = "MUL R4 R1 R5";
+    char line2[] = "MOVI R3 5";
+    char line3[] = "ADD R1 R2 R3";
+    char line4[] = "MUL R4 R1 R5";
      int *arr1 = processLine(line1);
-    // int *arr2 = processLine(line2);
-    // int *arr3 = processLine(line3);
-    // int *arr4 = processLine(line4);
+    int *arr2 = processLine(line2);
+    int *arr3 = processLine(line3);
+    int *arr4 = processLine(line4);
 
     // Print first 4 bits of the instruction
     printf("Opcode: ");
@@ -664,28 +664,27 @@ int main() {
         printf("%d", arr1[i]);
          }
          printf("\n");
+        // char str[] = "-45";
+        // int value = atoi(str);
+        // printf("%d\n", value);
+        printf("Opcode: ");
+        for (int i = 0; i < 32; i++) {
+            printf("%d", arr2[i]);
+             }
+             printf("\n");
+    printf("Opcode: ");
+    for (int i = 0; i < 32; i++) {
+        printf("%d", arr3[i]);
+         }
+         printf("\n");
         // printf("\n");
-    //     // char str[] = "-45";
-    //     // int value = atoi(str);
-    //     // printf("%d\n", value);
-    //     printf("Opcode: ");
-    //     for (int i = 0; i < 32; i++) {
-    //         printf("%d", arr2[i]);
-    //          }
-    //          printf("\n");
-    // printf("Opcode: ");
-    // for (int i = 0; i < 32; i++) {
-    //     printf("%d", arr3[i]);
-    //      }
-    //      printf("\n");
-    //     // printf("\n");
-    //     // char str[] = "-45";
-    //     // int value = atoi(str);
-    //     // printf("%d\n", value);
-    //     printf("Opcode: ");
-    //     for (int i = 0; i < 32; i++) {
-    //         printf("%d", arr4[i]);
-    //          }
+        // char str[] = "-45";
+        // int value = atoi(str);
+        // printf("%d\n", value);
+        printf("Opcode: ");
+        for (int i = 0; i < 32; i++) {
+            printf("%d", arr4[i]);
+             }
 
         return 0;
     }
