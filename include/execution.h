@@ -6,6 +6,6 @@ int* execute(int ALU[], int branch, int memoryRead, int memoryWrite, int registe
 
 int alu(char * instruction, int R1, int R2, int R3);
 
-int shift(char * instruction, int R1, int R2, int R3);
+int shifting(char * instruction, int R1, int R2, int R3);
 
 #endif

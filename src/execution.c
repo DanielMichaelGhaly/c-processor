@@ -18,7 +18,10 @@ if zero means nth will be done in the memory stage. nothing done
 index 2 will be set to 1 if we will write to register R1(first passed register) 
 and zero means that value is already updated in PC so it is a jump instruction.  
 */
-    int execution_Result[3] = {0};
+    int* execution_Result = malloc(3 * sizeof(int));
+    *execution_Result = 0;
+    *(execution_Result+1) = 0;
+    *(execution_Result+2) = 0;
     int answer = 0;
     for(int i = 0; i<5; i++){
         if(ALU[i] == 1){
@@ -68,7 +71,7 @@ and zero means that value is already updated in PC so it is a jump instruction.
                 case 0: instruction = "LSL";break;
                 case 1: instruction = "LSR";break;
             }
-            answer = shift(instruction, R1, R2, R3);
+            answer = shifting(instruction, R1, R2, R3);
             execution_Result[0] = answer;
         }
     }
@@ -91,7 +94,7 @@ int alu(char * instruction, int R1, int R2, int R3)
     return R1;
 }
 
-int shift(char * instruction, int R1, int R2, int R3)
+int shifting(char * instruction, int R1, int R2, int R3)
 {
     if(strcmp(instruction, "LSL")==0){
         R1 = R2 << R3;

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "queue.h"
 #include "fetch-decode.h"
+#include "main.h"
 
 int r1[5];
 int r2[5];
@@ -16,10 +17,6 @@ int memR = 0;
 int memW = 0;
 int regW = 0;
 int branch = 0;
-
-Queue *fetch_queue;
-Queue *decode_queue;
-
 
 void initialize_with_zeros(int *arr, int size) {
     for (int i = 0; i < size; i++) {
@@ -48,16 +45,16 @@ int * pc_incr(int* pc) {
 }
 
 void fetch(int* pc) {
-    int *IR = memory[bin_to_int(pc, 32)];
+    int *IR = (int *) memory[bin_to_int(pc, 32)];
     pc_incr(pc);
-    initQueue(fetch_queue);
-    enqueue(fetch_queue, IR);
+    initQueue(&fetch_queue);
+    enqueue(&fetch_queue, IR);
 }
 
 void decode() {
-    int* instr = dequeue(fetch_queue);
-    initQueue(decode_queue);
-    enqueue(decode_queue, instr);
+    int* instr = dequeue(&fetch_queue);
+    initQueue(&decode_queue);
+    enqueue(&decode_queue, instr);
 
     int opcode = (instr[0] << 3) | (instr[1] << 2) | (instr[2] << 1) | instr[3];
     initialize_with_zeros(shift, 2);
@@ -75,9 +72,9 @@ void decode() {
             int r1 = (instr[4] << 4) | (instr[5] << 3) | (instr[6] << 2) | (instr[7] << 1) | instr[8];
             int r2 = (instr[9] << 4) | (instr[10] << 3) | (instr[11] << 2) | (instr[12] << 1) | instr[13];
             int r3 = (instr[14] << 4) | (instr[15] << 3) | (instr[16] << 2) | (instr[17] << 1) | instr[18];
-            int shamt = 0;
+            int local_shamt = 0;
             for (int i = 0; i < 13; i++) {
-                shamt |= (instr[19 + i] << (12 - i));
+                local_shamt |= (instr[19 + i] << (12 - i));
             }
 
             switch (opcode) {
@@ -92,11 +89,11 @@ void decode() {
             break;
         }
         case 0x3: case 0x4: case 0x6: case 0xA: case 0xB: {
-            int r1 = (instr[4] << 4) | (instr[5] << 3) | (instr[6] << 2) | (instr[7] << 1) | instr[8];
-            int r2 = (instr[9] << 4) | (instr[10] << 3) | (instr[11] << 2) | (instr[12] << 1) | instr[13];
-            int immediate = 0;
+            int local_r1 = (instr[4] << 4) | (instr[5] << 3) | (instr[6] << 2) | (instr[7] << 1) | instr[8];
+            int local_r2 = (instr[9] << 4) | (instr[10] << 3) | (instr[11] << 2) | (instr[12] << 1) | instr[13];
+            int local_immediate = 0;
             for (int i = 0; i < 18; i++) {
-                immediate |= (instr[14 + i] << (17 - i));
+                local_immediate |= (instr[14 + i] << (17 - i));
             }
 
             switch (opcode) {
@@ -109,9 +106,9 @@ void decode() {
             break;
         }
         case 0x7: {
-            int address = 0;
+            int local_address = 0;
             for (int i = 0; i < 28; i++) {
-                address |= (instr[4 + i] << (27 - i));
+                local_address |= (instr[4 + i] << (27 - i));
             }
             branch = 1;
             break;
@@ -122,7 +119,7 @@ void decode() {
 }
 
 int access_register_file(int * reg_num) {
-    int * data = register_file[bin_to_int(reg_num, 5)];
+    int * data = registers[bin_to_int(reg_num, 5)];
     return bin_to_int(data, 32);
 }
 
@@ -136,12 +133,22 @@ void memory_access(int * data, int * address, int memW, int memR) {
         }
     }
     if (memW) {
-        memory[bin_to_int(address, 32)] = int_to_bin32(bin_to_int(data, 32), data);
+        int mem_index = bin_to_int(address, 32);
+        int *src = data;
+        int *dest = memory[mem_index];
+        for (int i = 0; i < 32; ++i) {
+            dest[i] = src[i];
+        }
     }
 }
 
 void write_back(int * data, int * reg_num, int regW) {
     if (regW) {
-        register_file[bin_to_int(reg_num, 5)] = int_to_bin32(bin_to_int(data, 32), data);
+        int reg_index = bin_to_int(reg_num, 5);
+        int *reg_ptr = registers[reg_index];
+        int *src = int_to_bin32(bin_to_int(data, 32), data);
+        for (int i = 0; i < 32; ++i) {
+            reg_ptr[i] = src[i];
+        }
     }
 }

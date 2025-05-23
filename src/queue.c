@@ -5,6 +5,12 @@
 void initQueue(Queue *q){
     q ->front = -1;
     q ->back = -1;
+    q -> clk = 0;
+    for (int i = 0; i < MAX_SIZE; i++) {
+        for (int j = 0; j < 32; j++) {
+            q->items[i][j] = 0;
+        }
+    }
 }
 
 int isEmpty(Queue *q){
@@ -21,7 +27,7 @@ int isFull(Queue *q){
     return 0;
 }
 
-void enqueue(Queue *q, int value){
+void enqueue(Queue *q, int* value){
     if(isFull(q)){
         printf("Queue is full\n");
         return;
@@ -30,15 +36,19 @@ void enqueue(Queue *q, int value){
         q ->front = 0;
     }
     q ->back++;
-    q ->items[q ->back] = value;
+    for(int i = 0; i<32; i++)
+    {
+        (q -> items[q->back])[i] = *value;
+        value++;
+    }
 }
 
-int dequeue(Queue *q){
+int* dequeue(Queue *q){
     if(isEmpty(q)){
         printf("Queue is empty\n");
-        return -1;
+        return NULL;
     }
-    int item = q ->items[q ->front];
+    int* item = q ->items[q ->front];
     if(q ->front == q ->back){
         q ->front = -1;
         q ->back = -1;
@@ -48,10 +58,10 @@ int dequeue(Queue *q){
     return item;
 }
 
-int peek(Queue *q){
+int* peek(Queue *q){
     if(isEmpty(q)){
         printf("Queue is empty\n");
-        return -1;
+        return NULL;
     }
     return q ->items[q ->front];
 }
