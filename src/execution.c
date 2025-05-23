@@ -3,80 +3,73 @@
 #include <string.h>
 #include "execution.h"
 
-//ALU[5], branch, memory read, memory write, register write, memory to register, shift[2]
-//if for example ALU[0] = 1 then ADD for example, if branch is 1 then will branch, if shift[1] == 1 then shift right
-//branch = 0 means no jump, branch = 1 means jump, branch = 2 means JEQ
-int* execute(int ALU[], int branch, int memoryRead, int memoryWrite, int registerWrite, 
-    int shft[] , int R1, int R2, int R3){
+int bits_to_int(const int *bits, int len) {
+    int val = 0;
+    for (int i = 0; i < len; ++i) {
+        val = (val << 1) | bits[i];
+    }
+    return val;
+}
 
-/* 
-the return value will be an array of size 3 
-where the answer of ALU or shift or the displaced pointer is in index 0,
-if memory read or write then index 1 if value is 1 means will write Mem[answer] to R1 (R1 = Mem[answer])
-if value is 2 means will write R1 into Mem[answer], Mem[answer] = R1
-if zero means nth will be done in the memory stage. nothing done
-index 2 will be set to 1 if we will write to register R1(first passed register) 
-and zero means that value is already updated in PC so it is a jump instruction.  
-*/
-    int* execution_Result = malloc(3 * sizeof(int));
-    *execution_Result = 0;
-    *(execution_Result+1) = 0;
-    *(execution_Result+2) = 0;
+int* execute(int ALU[], int branch,int shft[], int R1[], int R2[], int R3[]) {
+
+    int execution_Result[3] = {0};
     int answer = 0;
-    for(int i = 0; i<5; i++){
-        if(ALU[i] == 1){
-            char * instruction = "";
-            switch(i)
-            {
-                case 0: instruction = "ADD";break;
-                case 1: instruction = "SUB";break;
-                case 2: instruction = "MUL";break;
-                case 3: instruction = "AND";break;
-                case 4: instruction = "XORI";break;
+
+    // Convert bit arrays to ints
+    int r1_val = bits_to_int(R1, 32);
+    int r2_val = bits_to_int(R2, 32);
+    int r3_val = bits_to_int(R3, 32);
+
+    for(int i = 0; i < 5; i++) {
+        if(ALU[i] == 1) {
+            char *instruction = "";
+            switch(i) {
+                case 0: instruction = "ADD"; break;
+                case 1: instruction = "SUB"; break;
+                case 2: instruction = "MUL"; break;
+                case 3: instruction = "AND"; break;
+                case 4: instruction = "XORI"; break;
             }
-            answer = alu(instruction, R1, R2, R3);
+            answer = alu(instruction, r1_val, r2_val, r3_val);
             execution_Result[0] = answer;
         }
     }
-
-    if(branch > 0){
-        // switch(branch)
-        // {
-        //     case 1: pc = R1;break;
-        //     case 2: if(R1==R2){pc = pc + 1 + R3;};break;
-        // }
-        execution_Result[2] = 0; 
+    if(branch > 0) {
+        switch(branch) {
+            case 1: pc = r1_val; break;
+            case 2: if(r1_val == r2_val) { pc = pc + 1 + r3_val; } break;
+        }
+        execution_Result[2] = 0;
     }
 
-    //in memory stage
-    if(memoryRead == 1){  
-        answer = R2 + R3;
-        execution_Result[0] = answer;
-    }
-    //in memory stage
-    if(memoryWrite == 1){
-        answer = R2 + R3;
-        execution_Result[0] = answer;
-    }
-    //in write back stage
-    if(registerWrite == 1){
-        execution_Result[2] = 1;
-    }
+    // if(memoryRead == 1) {
+    //     answer = r2_val + r3_val;
+    //     execution_Result[0] = answer;
+    // }
+    // if(memoryWrite == 1) {
+    //     answer = r2_val + r3_val;
+    //     execution_Result[0] = answer;
+    // }
+    // if(registerWrite == 1) {
+    //     execution_Result[2] = 1;
+    // }
 
-    for(int i = 0; i<2; i++){
-        if(shft[i] == 1){
-            char * instruction = "";
-            switch(i)
-            {
-                case 0: instruction = "LSL";break;
-                case 1: instruction = "LSR";break;
+    for(int i = 0; i < 2; i++) {
+        if(shft[i] == 1) {
+            char *instruction = "";
+            switch(i) {
+                case 0: instruction = "LSL"; break;
+                case 1: instruction = "LSR"; break;
             }
-            answer = shifting(instruction, R1, R2, R3);
+            answer = shift(instruction, r1_val, r2_val, r3_val);
             execution_Result[0] = answer;
         }
     }
     return execution_Result;
 }
+
+
 
 int alu(char * instruction, int R1, int R2, int R3)
 {
@@ -94,7 +87,7 @@ int alu(char * instruction, int R1, int R2, int R3)
     return R1;
 }
 
-int shifting(char * instruction, int R1, int R2, int R3)
+int shift(char * instruction, int R1, int R2, int R3)
 {
     if(strcmp(instruction, "LSL")==0){
         R1 = R2 << R3;
