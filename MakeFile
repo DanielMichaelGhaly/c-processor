@@ -1,31 +1,21 @@
-# Compiler and flags
 CC = gcc
-CFLAGS = -Iinclude -Wall -Wextra -g
+CFLAGS = -std=c11 -Wall -Wextra -Werror -Iinclude
+SRCDIR = src
+OBJDIR = build
+BINDIR = bin
+TARGET = main
 
-# Source files
-SRC_DIR = src
-SRCS = $(wildcard $(SRC_DIR)/*.c)
+SOURCES := $(wildcard $(SRCDIR)/*.c)
+OBJECTS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SOURCES))
 
-# Object files
-OBJ_DIR = obj
-OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
+$(BINDIR)/$(TARGET): $(OBJECTS)
+	@mkdir -p $(BINDIR)
+	$(CC) $(OBJECTS) -o $@
 
-# Executable
-TARGET = bin/main.exe
-
-# Main target
-all: $(OBJ_DIR) $(TARGET)
-
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
-
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
-
+.PHONY: clean
 clean:
-	rm -rf $(OBJ_DIR) $(TARGET)
-
-.PHONY: all clean
+	rm -rf $(OBJDIR)/*.o $(BINDIR)/$(TARGET)

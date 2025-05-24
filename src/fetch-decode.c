@@ -1,18 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "queue.h"
 #include "fetch-decode.h"
-#include "main.h"
 
-int r1[5];
-int r2[5];
-int r3[5];
-int shamt[13] ;
-int immediate[18];
-int address[28];
+int r1[5]= {0};
+int r2[5] = {0};
+int r3[5] = {0};
+int shamt[13] = {0};
+int immediate[18] = {0};
+int address[28] = {0};
 
-int ALUsig[5];
-int shift[2];
+int ALUsig[5] = {0};
+int shift[2] = {0};
 int memR = 0;
 int memW = 0;
 int regW = 0;
@@ -47,13 +43,13 @@ int * pc_incr(int* pc) {
 void fetch(int* pc) {
     int *IR = (int *) memory[bin_to_int(pc, 32)];
     pc_incr(pc);
-    initQueue(&fetch_queue);
+    //initQueue(&fetch_queue);
     enqueue(&fetch_queue, IR);
 }
 
 void decode() {
     int* instr = dequeue(&fetch_queue);
-    initQueue(&decode_queue);
+    //initQueue(&decode_queue);
     enqueue(&decode_queue, instr);
 
     int opcode = (instr[0] << 3) | (instr[1] << 2) | (instr[2] << 1) | instr[3];
@@ -89,11 +85,10 @@ void decode() {
             break;
         }
         case 0x3: case 0x4: case 0x6: case 0xA: case 0xB: {
-            int local_r1 = (instr[4] << 4) | (instr[5] << 3) | (instr[6] << 2) | (instr[7] << 1) | instr[8];
-            int local_r2 = (instr[9] << 4) | (instr[10] << 3) | (instr[11] << 2) | (instr[12] << 1) | instr[13];
-            int local_immediate = 0;
+            r1[0] = instr[4] ; r1[1] = instr[5]; r1[2] = instr[6]; r1[3] = instr[7]; r1[4] = instr[8];
+            r2[0] = instr[9]; r2[1] = instr[10]; r2[2] = instr[11]; r2[3] = instr[12]; r2[4] = instr[13];
             for (int i = 0; i < 18; i++) {
-                local_immediate |= (instr[14 + i] << (17 - i));
+                immediate[i]= (instr[14 + i]);
             }
 
             switch (opcode) {
@@ -106,9 +101,8 @@ void decode() {
             break;
         }
         case 0x7: {
-            int local_address = 0;
             for (int i = 0; i < 28; i++) {
-                local_address |= (instr[4 + i] << (27 - i));
+                address[i]= (instr[4 + i]);
             }
             branch = 1;
             break;
@@ -123,7 +117,7 @@ int access_register_file(int * reg_num) {
     return bin_to_int(data, 32);
 }
 
-void memory_access(int * data, int * address, int memW, int memR) {
+void memory_access(int * data) {
     if (memW == 0 && memR == 0) return;
 
     if (memR) {
@@ -142,7 +136,7 @@ void memory_access(int * data, int * address, int memW, int memR) {
     }
 }
 
-void write_back(int * data, int * reg_num, int regW) {
+void write_back(int * data, int * reg_num) {
     if (regW) {
         int reg_index = bin_to_int(reg_num, 5);
         int *reg_ptr = registers[reg_index];

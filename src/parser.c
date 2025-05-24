@@ -1,9 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-#include <ctype.h>
 #include "parser.h"
 
 // Define opcodes
@@ -35,11 +29,11 @@ void write_binary(int* dest, int value, int start, int bits) {
 
 // Parse a single instruction line into binary representation
 void parse_instruction(const char* line, int* binary) {
-    char mnemonic[10];
-    char op1[10], op2[10], op3[10];
+    char mnemonic[10] = {0};
+    char op1[10] = {0}, op2[10] = {0}, op3[10] = {0};
     int opcode, reg1, reg2, reg3, imm, addr;
 
-    sscanf(line, "%s %s %s %s", mnemonic, op1, op2, op3);
+    sscanf(line, "%9s %9[^, \t\n] %9[^, \t\n] %9[^, \t\n]", mnemonic, op1, op2, op3);
     opcode = get_opcode(mnemonic);
     if (opcode == -1) return;
 
@@ -60,7 +54,13 @@ void parse_instruction(const char* line, int* binary) {
     } else if ((opcode >= 3 && opcode <= 6) || opcode >= 10) { // I-type: MOVI, JEQ, XORI, MOVR, MOVM
         reg1 = parse_register(op1);
         reg2 = (opcode == 3) ? 0 : parse_register(op2);
-        imm = atoi(op3);
+        if(strcmp(mnemonic, "MOVI")==0)
+        {
+            imm = atoi(op2);
+        }
+        else{
+            imm = atoi(op3);
+        }
 
         write_binary(binary, reg1, 4, 5);
         write_binary(binary, reg2, 9, 5);
