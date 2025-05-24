@@ -59,10 +59,6 @@ void readFile(char * filePath)
 
 int main()
 {
-    registers[2][31] = 1;
-    registers[2][30] = 1;
-    registers[3][31] = 1;
-    registers[3][29] = 1;
 
     initQueue(&fetch_queue);
     initQueue(&decode_queue);
@@ -92,6 +88,7 @@ int main()
                 instructions[i].write_back = cycle;
                 instructions[i].completed = 1;
                 completed++;
+                write_back(&instructions[i], res_exec);
                 continue;
             }
 
@@ -99,15 +96,17 @@ int main()
             if (instructions[i].execute_end != -1 && instructions[i].memory == -1 && cycle > instructions[i].execute_end && !memory_busy) {
                 instructions[i].memory = cycle;
                 memory_busy = 1;
+                memory_access(&instructions[i],res_exec);
                 continue;
             }
-
             // Execute (2 cycles)
             if (instructions[i].decode_end != -1 && instructions[i].execute_start == -1 && cycle > instructions[i].decode_end) {
                 instructions[i].execute_start = cycle;
                 instructions[i].execute_end = cycle + 1;
-                res_exec = execute();
-                // printf("%d", res);
+                res_exec = execute(&instructions[i]);
+                instructions[i].value = res_exec;
+                printf("Instruction %d : %d", i, instructions[i].value);
+                // printf("result : %d", res_exec);
                 // printf("\n");
                 continue;
             }
@@ -116,7 +115,7 @@ int main()
             if (instructions[i].fetch != -1 && instructions[i].decode_start == -1 && cycle > instructions[i].fetch) {
                 instructions[i].decode_start = cycle;
                 instructions[i].decode_end = cycle + 1;
-                decode();
+                decode(&instructions[i]);
                 // printf("cycle: %d", cycle);
                 // printf("\n");
                 // printArr(r1,5);
@@ -129,6 +128,7 @@ int main()
                 // printArr(shift, 2);
                 // printf("%d, %d, %d, %d",memR,memW,regW,branch);
                 // printf("\n");
+                // printf("regsgdgs %d", instructions[i].regW);
                 continue;
             }
 
@@ -146,6 +146,10 @@ int main()
         printArr(registers[32], 32);
         printf("Cycles : %d", cycle);
         printf("\n");
+        // printf("R1: ");
+        // printArr(registers[1], 32);
+        // printf("R2: ");
+        // printArr(registers[2], 32);
 
         cycle++;
     }
@@ -163,6 +167,12 @@ int main()
 
     for(int i = 0; i < 2048; i++) {
         int_array_to_binary_string(memory[i]);
+    }
+
+    log_print("Registers:");
+    for(int i = 0; i<33 ;i++)
+    {
+        int_array_to_binary_string(registers[i]);
     }
     
     close_logger();

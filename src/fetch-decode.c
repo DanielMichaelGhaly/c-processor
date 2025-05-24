@@ -1,18 +1,18 @@
 #include "fetch-decode.h"
 
-int r1[5]= {0};
-int r2[5] = {0};
-int r3[5] = {0};
-int shamt[13] = {0};
-int immediate[18] = {0};
-int address[28] = {0};
+// int r1[5]= {0};
+// int r2[5] = {0};
+// int r3[5] = {0};
+// int shamt[13] = {0};
+// int immediate[18] = {0};
+// int address[28] = {0};
 
-int ALUsig[5] = {0};
-int shift[2] = {0};
-int memR = 0;
-int memW = 0;
-int regW = 0;
-int branch = 0;
+// int ALUsig[5] = {0};
+// int shift[2] = {0};
+// int memR = 0;
+// int memW = 0;
+// int regW = 0;
+// int branch = 0;
 
 void initialize_with_zeros(int *arr, int size) {
     for (int i = 0; i < size; i++) {
@@ -47,64 +47,64 @@ void fetch(int* pc) {
     enqueue(&fetch_queue, IR);
 }
 
-void decode() {
+void decode(Instruction* instruction) {
     int* instr = dequeue(&fetch_queue);
     //initQueue(&decode_queue);
     enqueue(&decode_queue, instr);
 
     int opcode = (instr[0] << 3) | (instr[1] << 2) | (instr[2] << 1) | instr[3];
-    initialize_with_zeros(shift, 2);
-    initialize_with_zeros(ALUsig, 5);
-    initialize_with_zeros(shamt, 13);
-    initialize_with_zeros(immediate, 18);
-    initialize_with_zeros(address, 28);
-    memR = 0;
-    memW = 0;
-    regW = 0;
-    branch = 0;
+    initialize_with_zeros(instruction->shift, 2);
+    initialize_with_zeros(instruction->ALUsig, 5);
+    initialize_with_zeros(instruction->shamt, 13);
+    initialize_with_zeros(instruction->immediate, 18);
+    initialize_with_zeros(instruction->address, 28);
+    instruction->memR = 0;
+    instruction->memW = 0;
+    instruction->regW = 0;
+    instruction->branch = 0;
 
     switch (opcode) {
         case 0x0: case 0x1: case 0x2: case 0x5: case 0x8: case 0x9: {
             // Extract r1, r2, r3 as 5-bit register numbers
-            r1[0] = instr[4] ; r1[1] = instr[5]; r1[2] = instr[6]; r1[3] = instr[7]; r1[4] = instr[8];
-            r2[0] = instr[9]; r2[1] = instr[10]; r2[2] = instr[11]; r2[3] = instr[12]; r2[4] = instr[13];
-            r3[0] = instr[14]; r3[1] = instr[15]; r3[2] = instr[16]; r3[3] = instr[17]; r3[4] = instr[18];
-            for (int i = 0; i < 13; i++) {
-                shamt[i] = (instr[19 +i]);
+            instruction->r1[0] = instr[4] ; instruction->r1[1] = instr[5]; instruction->r1[2] = instr[6]; instruction->r1[3] = instr[7]; instruction->r1[4] = instr[8];
+            instruction->r2[0] = instr[9]; instruction->r2[1] = instr[10]; instruction->r2[2] = instr[11]; instruction->r2[3] = instr[12]; instruction->r2[4] = instr[13];
+            instruction->r3[0] = instr[14]; instruction->r3[1] = instr[15]; instruction->r3[2] = instr[16]; instruction->r3[3] = instr[17]; instruction->r3[4] = instr[18];
+            for (int j = 0; j < 13; j++) {
+                instruction->shamt[j] = (instr[19 +j]);
             }
 
             switch (opcode) {
-                case 0x0: ALUsig[0] = 1; break;
-                case 0x1: ALUsig[1] = 1; break;
-                case 0x2: ALUsig[2] = 1; break;
-                case 0x5: ALUsig[3] = 1; break;
-                case 0x8: shift[0] = 1; break;
-                case 0x9: shift[1] = 1; break;
+                case 0x0: instruction->ALUsig[0] = 1; break;
+                case 0x1: instruction->ALUsig[1] = 1; break;
+                case 0x2: instruction->ALUsig[2] = 1; break;
+                case 0x5: instruction->ALUsig[3] = 1; break;
+                case 0x8: instruction->shift[0] = 1; break;
+                case 0x9: instruction->shift[1] = 1; break;
             }
-            regW = 1;
+            instruction->regW = 1;
             break;
         }
         case 0x3: case 0x4: case 0x6: case 0xA: case 0xB: {
-            r1[0] = instr[4] ; r1[1] = instr[5]; r1[2] = instr[6]; r1[3] = instr[7]; r1[4] = instr[8];
-            r2[0] = instr[9]; r2[1] = instr[10]; r2[2] = instr[11]; r2[3] = instr[12]; r2[4] = instr[13];
-            for (int i = 0; i < 18; i++) {
-                immediate[i]= (instr[14 + i]);
+            instruction->r1[0] = instr[4] ; instruction->r1[1] = instr[5]; instruction->r1[2] = instr[6]; instruction->r1[3] = instr[7]; instruction->r1[4] = instr[8];
+            instruction->r2[0] = instr[9]; instruction->r2[1] = instr[10]; instruction->r2[2] = instr[11]; instruction->r2[3] = instr[12]; instruction->r2[4] = instr[13];
+            for (int j = 0; j < 18; j++) {
+                instruction->immediate[j]= (instr[14 + j]);
             }
 
             switch (opcode) {
-                case 0x3: regW = 1; break;
-                case 0x4: branch = 1; break;
-                case 0x6: ALUsig[4] = 1; regW = 1; break;
-                case 0xA: regW = 1; memR = 1; break;
-                case 0xB: memW = 1; break;
+                case 0x3: instruction->regW = 1; break;
+                case 0x4: instruction->branch = 1; break;
+                case 0x6: instruction->ALUsig[4] = 1; instruction->regW = 1; break;
+                case 0xA: instruction->regW = 1; instruction->memR = 1; break;
+                case 0xB: instruction->memW = 1; break;
             }
             break;
         }
         case 0x7: {
-            for (int i = 0; i < 28; i++) {
-                address[i]= (instr[4 + i]);
+            for (int j = 0; j < 28; j++) {
+                instruction->address[j]= (instr[4 + j]);
             }
-            branch = 1;
+            instruction->branch = 1;
             break;
         }
         default:
@@ -117,7 +117,7 @@ int access_register_file(int * reg_num) {
     return bin_to_int(data, 32);
 }
 
-void memory_access(int d) {
+void memory_access(Instruction* instruction10, int d) {
 
     int * instr = dequeue(&execution_queue);
     if(instr==NULL)
@@ -128,24 +128,29 @@ void memory_access(int d) {
 
     int * data = malloc(32 * sizeof(int));
     int_to_bin32(d, data);
-    if (memW == 0 && memR == 0) return;
+    if (instruction10->memW == 0 && instruction10->memR == 0) return;
 
-    if (memR) {
-        int * mem_data = memory[bin_to_int(address, 28)];
+    if (instruction10->memR) {
+        printf("entered memory read\n");
+        int * mem_data = memory[d+1023];
         for (int i = 0; i < 32; ++i) {
             data[i] = mem_data[i];
         }
     }
-    if (memW) {
-        int mem_index = 1023 + bin_to_int(address, 28);
+    if (instruction10->memW) {
+        int mem_index = 1023 + d;
         int *dest = memory[mem_index];
-        for (int i = 0; i < 32; ++i) {
-            dest[i] = data[i];
+        printf("entered memory write\n");
+        printf("%d: \n", bin_to_int(instruction10->r1, 5));
+        printArr(registers[bin_to_int(instruction10->r1, 5)],32);
+        for (int j = 0; j < 32; j++) {
+            dest[j] = registers[bin_to_int(instruction10->r1, 5)][j];
         }
     }
 }
 
-void write_back(int d) {
+void write_back(Instruction* instruction11, int d) {
+    d = 0;
     int * instr = dequeue(&memory_queue);
     if(instr==NULL)
     {
@@ -154,10 +159,20 @@ void write_back(int d) {
     enqueue(&writeBack_queue, instr);
 
     int* data = malloc(32 * sizeof(int));
-    int_to_bin32(d, data);
-    if (regW) {
-        int reg_index = bin_to_int(r1, 5);
-        int *reg_ptr = registers[reg_index];
-        int_to_bin32(d, reg_ptr);
+    int_to_bin32(bin_to_int(instruction11->immediate,18), data);
+    printf("hello %d \n", instruction11->regW);
+    if (instruction11->regW) {
+        int reg_index = bin_to_int(instruction11->r1, 5);
+        printf("Write Back to register %d: ", reg_index);
+        if(bin_to_int(instruction11->immediate,18)!=0){
+            int_to_bin32(bin_to_int(instruction11->immediate,18), registers[reg_index]);
+            printf("Data: ");
+            printArr(registers[reg_index], 32);
+            printf("%d", bin_to_int(instruction11->immediate,18));
+            printf("\n");
+        }
+        else{
+            int_to_bin32(instruction11->value, registers[reg_index]);
+        }
     }
 }
