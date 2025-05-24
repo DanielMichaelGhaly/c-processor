@@ -69,12 +69,12 @@ void decode() {
 
     switch (opcode) {
         case 0x0: case 0x1: case 0x2: case 0x5: case 0x8: case 0x9: {
-            int r1 = (instr[4] << 4) | (instr[5] << 3) | (instr[6] << 2) | (instr[7] << 1) | instr[8];
-            int r2 = (instr[9] << 4) | (instr[10] << 3) | (instr[11] << 2) | (instr[12] << 1) | instr[13];
-            int r3 = (instr[14] << 4) | (instr[15] << 3) | (instr[16] << 2) | (instr[17] << 1) | instr[18];
-            int local_shamt = 0;
+            // Extract r1, r2, r3 as 5-bit register numbers
+            r1[0] = instr[4] ; r1[1] = instr[5]; r1[2] = instr[6]; r1[3] = instr[7]; r1[4] = instr[8];
+            r2[0] = instr[9]; r2[1] = instr[10]; r2[2] = instr[11]; r2[3] = instr[12]; r2[4] = instr[13];
+            r3[0] = instr[14]; r3[1] = instr[15]; r3[2] = instr[16]; r3[3] = instr[17]; r3[4] = instr[18];
             for (int i = 0; i < 13; i++) {
-                local_shamt |= (instr[19 + i] << (12 - i));
+                shamt[i] = (instr[19 +i]);
             }
 
             switch (opcode) {
