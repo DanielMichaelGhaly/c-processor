@@ -6,10 +6,8 @@ set(CMAKE_C_STANDARD 11)
 
 # Platform-specific compiler flags
 if(MSVC)
-    # Flags for Microsoft Visual C++
-    add_compile_options(/W4 /WX)  # /W4 for warning level, /WX treats warnings as errors
+    add_compile_options(/W4 /WX)  # High warning level, treat warnings as errors
 else()
-    # Flags for GCC/Clang
     add_compile_options(-Wall -Wextra -Werror)
 endif()
 

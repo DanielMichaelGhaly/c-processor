@@ -342,6 +342,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="D:\DanielDesktop\GUC\3rd_year_2nd_semester\CA\c-processor\src\main.c" />
     <ClCompile Include="D:\DanielDesktop\GUC\3rd_year_2nd_semester\CA\c-processor\src\parser.c" />
     <ClCompile Include="D:\DanielDesktop\GUC\3rd_year_2nd_semester\CA\c-processor\src\queue.c" />
+    <ClCompile Include="D:\DanielDesktop\GUC\3rd_year_2nd_semester\CA\c-processor\src\temp_pipline.c" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

@@ -19,6 +19,9 @@
     <ClCompile Include="D:\DanielDesktop\GUC\3rd_year_2nd_semester\CA\c-processor\src\queue.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D:\DanielDesktop\GUC\3rd_year_2nd_semester\CA\c-processor\src\temp_pipline.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="D:\DanielDesktop\GUC\3rd_year_2nd_semester\CA\c-processor\CMakeLists.txt" />

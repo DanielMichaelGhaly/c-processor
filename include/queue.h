@@ -1,6 +1,6 @@
 #ifndef QUEUE_H
 #define QUEUE_H
-
+#include <stdio.h>
 #define MAX_SIZE 10
 #define ENTRY_SIZE 32 // Each entry is a 32-bit array
 

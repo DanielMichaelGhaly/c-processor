@@ -1,6 +1,11 @@
 #ifndef parser_h
 #define parser_h
-
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <ctype.h>
 #define MEMORY_SIZE 2048
 #define WORD_SIZE 32
 #define MAX_LINE_LEN 256
