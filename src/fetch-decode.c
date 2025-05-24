@@ -117,32 +117,47 @@ int access_register_file(int * reg_num) {
     return bin_to_int(data, 32);
 }
 
-void memory_access(int * data) {
+void memory_access(int d) {
+
+    int * instr = dequeue(&execution_queue);
+    if(instr==NULL)
+    {
+        return;
+    }
+    enqueue(&memory_queue, instr);
+
+    int * data = malloc(32 * sizeof(int));
+    int_to_bin32(d, data);
     if (memW == 0 && memR == 0) return;
 
     if (memR) {
-        int * mem_data = memory[bin_to_int(address, 32)];
+        int * mem_data = memory[bin_to_int(address, 28)];
         for (int i = 0; i < 32; ++i) {
             data[i] = mem_data[i];
         }
     }
     if (memW) {
-        int mem_index = bin_to_int(address, 32);
-        int *src = data;
+        int mem_index = 1023 + bin_to_int(address, 28);
         int *dest = memory[mem_index];
         for (int i = 0; i < 32; ++i) {
-            dest[i] = src[i];
+            dest[i] = data[i];
         }
     }
 }
 
-void write_back(int * data, int * reg_num) {
+void write_back(int d) {
+    int * instr = dequeue(&memory_queue);
+    if(instr==NULL)
+    {
+        return;
+    }
+    enqueue(&writeBack_queue, instr);
+
+    int* data = malloc(32 * sizeof(int));
+    int_to_bin32(d, data);
     if (regW) {
-        int reg_index = bin_to_int(reg_num, 5);
+        int reg_index = bin_to_int(r1, 5);
         int *reg_ptr = registers[reg_index];
-        int *src = int_to_bin32(bin_to_int(data, 32), data);
-        for (int i = 0; i < 32; ++i) {
-            reg_ptr[i] = src[i];
-        }
+        int_to_bin32(d, reg_ptr);
     }
 }

@@ -57,8 +57,8 @@ void decode();
 
 int access_register_file(int * reg_num);
 
-void memory_access(int * data);
+void memory_access(int d);
 
-void write_back(int * data,  int * reg_num);
+void write_back(int d);
 
 #endif
