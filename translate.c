@@ -219,7 +219,7 @@ for (int i = 0; i < count; i++) {
     for (int i = 0; i < count; i++) {
         free(instructions[i]);
     }
-    imain();
+    imain(count);
 
     return 0;
 }

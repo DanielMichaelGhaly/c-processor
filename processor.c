@@ -498,6 +498,21 @@ int* get_register_by_number(int reg_num) {
 }
 
 
+void finalprinter(){
+  printf(" \n");
+  printf(" \n");
+  printf(" \n");
+  for (int i=1;i<=31;i++){
+    printf("Reg%d: %d\n",i,read_from_register_and_convert_to_int(get_register_by_number(i)));
+  }
+  printf("PC: %d\n",read_from_register_and_convert_to_int(PC));
+  printf("IR: %d\n",read_from_register_and_convert_to_int(IR));
+  printf("ALU: %d\n",read_from_register_and_convert_to_int(ALU));
+
+  for(int i=0;i<2048;i++){
+    printf("Ram[%d]: %s\n",i,read_from_ram_and_convert_to_str(ram[i]));
+  }
+}
 
 //fetch code: 
 void fetch(){
@@ -510,6 +525,7 @@ void fetch(){
   write_int_into_register(z,IR);
   line++;
   write_int_into_register(line,PC);
+  printf("-------------------------------------\n");
 } 
 
 Data decode(){
@@ -603,6 +619,7 @@ Data decode(){
   if(q>11){
     printf("Oops⚠️...This instruction is not in my Instruction Set😟\n");
   }
+  printf("-------------------------------------\n");
 
   return d;
 }
@@ -673,7 +690,9 @@ Data execute(Data* d){
           break; 
         default: printf("Invalid Opcode\n");// Invalid register number
     }
+    printf("-------------------------------------\n");
     return *d;
+    
 
 }
 
@@ -694,6 +713,7 @@ Data Memory(Data* d){
     printf("This instruction doesn't want to access the RAM 🤷‍♂️\n");
   }
   return *d;
+  printf("-------------------------------------\n");
 }
 
 
@@ -744,13 +764,19 @@ void write_back(Data* d){
   }
   }
   printf("We are now done with instruction %s 🥳\n",d->inst);
-
+  printf("-------------------------------------\n");
 
 
 }
 
     
-int imain(){
+int imain(int ic){
+  int fc = 0;
+  int dc = 0;
+  int ec = 0;
+  int mc = 0;
+  int wc = 0;
+  int lc = 7 + ((ic - 1) * 2);
   init_queue(&fetch_stage);
   init_queue(&decode_stage);
   init_queue(&exec_stage);
@@ -774,27 +800,41 @@ int imain(){
   
 
 
-  for(int i=0;i<10;i++){
+  for(int i=0;i<lc;i++){
     clk_cycle ++;
+    printf(" \n");
     printf("Cycle Num: %d\n",clk_cycle);
     if(clk_cycle % 2 != 0){
-      fetch();
-      if(isEmpty(&mem_stage)==0){
+      if(fc <ic){ 
+        fetch();
+        fc++;
+      }
+      if(isEmpty(&mem_stage)==0 && wc<ic){
         Data pp = dequeue(&mem_stage);
         write_back(&pp);
+        wc++;
       }
 
     }
     else{
-      enqueue(&decode_stage,decode());
+      if(dc < ic){
+        enqueue(&decode_stage,decode());
+        dc++;
+      }
       if(clk_cycle>2){
-        Data ee = dequeue(&decode_stage);
-        Data ff = execute(&ee);
-        enqueue(&exec_stage,ff);
+        if(isEmpty(&decode_stage)==0 && ec<ic){
+          Data ee = dequeue(&decode_stage);
+          Data ff = execute(&ee);
+          enqueue(&exec_stage,ff);
+          ec++;
+        }
         if(clk_cycle>4){
-          Data mm = dequeue(&exec_stage);
-          Data m = Memory(&mm);
-          enqueue(&mem_stage,m);
+          if(isEmpty(&exec_stage)==0 && mc<ic){
+            Data mm = dequeue(&exec_stage);
+            Data m = Memory(&mm);
+            enqueue(&mem_stage,m);
+            mc++;
+          }
         }
       }
 
@@ -804,7 +844,7 @@ int imain(){
   Sleep(1000);  // Pause for 1 second
 
   }
-
+  finalprinter();
 
   return 0;
 
