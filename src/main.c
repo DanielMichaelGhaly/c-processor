@@ -41,13 +41,12 @@ void readFile(char * filePath)
         // Remove newline if exists
         line[strcspn(line, "\n")] = 0;
         // r == 0 means success else r==1 means empty line or comment
-        int r = parse_instruction(line, binary);
-        printf("r: %d", r);
+        parse_instruction(line, binary);
+        total_instructions++;
         // printf("Instruction %d: ", line_number++);
         // print_binary(binary);
-        if(r==0&&i<1024)
+        if(i<1024)
         {
-            total_instructions++;
             for(; j<32; j++)
             {
                 memory[i][j] = binary[j];
@@ -194,7 +193,33 @@ int main()
                instructions[i].memory,
                instructions[i].write_back);
     }
-
+    // for(int i = 0; i<2048; i++)
+    // {
+    //     int current_pc = bin_to_int(registers[32],32);
+    //     int current_inst = (int *) memory[bin_to_int(registers[32], 32)];
+    //     Instruction* instruction;
+    //     initialize_instruction(&instruction);
+    //     if(isEmpty(&fetch_queue)==1&&isEmpty(&decode_queue)==1&&isEmpty(&execution_queue)==1&&isEmpty(&memory_queue)==1&&isEmpty(&writeBack_queue)==1&&current_inst==0)
+    //     {
+    //         break;
+    //     }
+    //     cycle++;
+    //     printf("Cycle Num: %d\n", cycle);
+    //     if(cycle % 2 != 0)
+    //     {
+    //         if(current_inst!=0)
+    //         {
+    //             fetch(&registers[32],instruction);
+    //         }
+    //         if(isEmpty(&memory_queue)==0)
+    //         {
+    //             Instruction* pp = dequeue(&memory_queue);
+    //             write_back(pp,pp->value);
+    //         }
+    //     }
+    //     else{
+    //         enqueue(&decode_queue)
+    //     }
     for(int i = 0; i < 2048; i++) {
         int_array_to_binary_string(memory[i],-1);
     }
@@ -207,5 +232,5 @@ int main()
     }
     
     close_logger();
-
+    return 0;
 }
