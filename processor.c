@@ -825,7 +825,7 @@ int imain(int ic){
   //write_int_into_register(-50,R4);
 
 
-  for(int i=0;i<lc;i++){
+  for(int i=0;i<lc+1024;i++){
     int value_inside_pc = read_from_register_and_convert_to_int(PC);
     int current_inst = read_from_ram_and_convert_to_int(ram[value_inside_pc]);
     if(isEmpty(&decode_stage)==1 && isEmpty(&exec_stage)==1 && isEmpty(&mem_stage)==1 && current_inst==0 && fc==0){
