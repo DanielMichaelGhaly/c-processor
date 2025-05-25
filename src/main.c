@@ -155,9 +155,12 @@ int main()
 
             // Fetch (only if last fetch wasn’t the previous cycle and no MEM this cycle)
             if (instructions[i].fetch == -1 && cycle - last_fetch_cycle > 1 && !memory_busy) {
+                initialize_instruction(&instructions[i]);
                 instructions[i].fetch = cycle;
                 last_fetch_cycle = cycle;
                 fetch(registers[32], &(instructions[i]));
+                instructions[i].line = bin_to_int(registers[32],32);
+                printf("line: %d", instructions[i].line);
                 printf("entered fetch stage");
                 // printf("Outside fetch function\n");
                 // print_Instruction(&(instructions[i]));
@@ -175,6 +178,20 @@ int main()
         printf("\n");
         printf("Instruction: ");
         printArr((int *) memory[bin_to_int(registers[32], 32)],32);
+        printf("\nCycle-by-cycle simulation:\n");
+        for (int i = 0; i < total_instructions; i++) {
+            printf("Instruction %d: ", i + 1);
+            printf("IF=%d, ID=[%d-%d], EX=[%d-%d], MEM=%d, WB=%d\n",
+                   instructions[i].fetch,
+                   instructions[i].decode_start, instructions[i].decode_end,
+                   instructions[i].execute_start, instructions[i].execute_end,
+                   instructions[i].memory,
+                   instructions[i].write_back);
+        }
+        for(int i = 0; i<33 ;i++)
+        {
+            printf("%d: \n", bin_to_int(registers[i], 32));
+        }
         // printf("R1: ");
         // printArr(registers[1], 32);
         // printf("R2: ");

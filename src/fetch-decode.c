@@ -73,6 +73,7 @@ void decode(Instruction* instruction) {
     instruction->regW = 0;
     instruction->branch = 0;
 
+
     switch (opcode) {
         case 0x0: case 0x1: case 0x2: case 0x5: case 0x8: case 0x9: {
             // Extract r1, r2, r3 as 5-bit register numbers

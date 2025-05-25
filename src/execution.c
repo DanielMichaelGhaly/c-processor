@@ -53,11 +53,20 @@ int execute(Instruction* instruction) {
                 completed = completed + (bin_to_int(instruction->address,28)-1)-instruction->line;
             }
             else if(bin_to_int(registers[32],32)>bin_to_int(instruction->address,28)){
-                completed = bin_to_int(instruction->address,28)-1;
+                completed = bin_to_int(instruction->address,28);
                 instructions[instruction->line - 1].jump_backward = 1;
                 instructions[instruction->line - 2].jump_backward = 1;
-                for(int i = bin_to_int(instruction->address,28)+1;i<instruction->line;i++)
+                instructions[instruction->line -3].jump_backward = 1;
+                for(int i = bin_to_int(instruction->address,28);i<=instruction->line+1;i++)
                 {
+                    if(i==instruction->line)
+                    {
+                        instruction->fetch=-1;
+                        continue;
+                        // instruction->fetch = -1;
+                        // instruction->decode_start = -1;
+                        // instruction->decode_end = -1;
+                    }
                     initialize_instruction(&instructions[i]);
                 }
             }
@@ -140,17 +149,22 @@ void flush_Queues() {
         Instruction* flushed_Instr = dequeue(&fetch_queue);
         for(int i = 0; i<1024;i++)
         {
+            printf("entered flushing fetch\n");
             if(flushed_Instr->line == instructions[i].line){
+                printf("flushing fetch");
+                printf("line1 %d line2 %d",flushed_Instr->line, (int)(instructions[i].line));
                 initialize_instruction(&instructions[i]);
                 break;
             }
         }
     }
     while(!isEmpty(&decode_queue)) {
+        printf("etnered flushing decode queue");
         Instruction* flushed_Instr = dequeue(&decode_queue);
-        for(int i = 0; i<1024;i++)
+        for(int i = 0; i<total_instructions;i++)
         {
-            if(flushed_Instr->line == instructions[i].line){
+            if(flushed_Instr->line < instructions[i].line){
+                printf("flushed decode instr");
                 initialize_instruction(&instructions[i]);
                 break;
             }
