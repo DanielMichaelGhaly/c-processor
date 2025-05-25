@@ -6,6 +6,7 @@
 #include "main.h"
 #include "temp_pipline.h"
 
+
 // typedef struct {
 //     int ALUsig[5];
 //     int shift[2];
@@ -52,14 +53,16 @@ int bin_to_int(int *arr, int n);
 
 int * pc_incr(int* pc);
 
-void fetch(int* pc);
+void fetch(int* pc, Instruction* instruction);
 
 void decode(Instruction* instruction);
 
 int access_register_file(int * reg_num);
 
-void memory_access(Instruction* instruction10, int d);
+void memory_access(Instruction* instruction,int d);
 
-void write_back(Instruction* instruction11, int d);
+void write_back(Instruction* instruction, int d);
+
+int signed_immediate_to_int(int* bits, int len);
 
 #endif

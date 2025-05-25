@@ -40,20 +40,27 @@ int * pc_incr(int* pc) {
     return int_to_bin32(bin_to_int(pc, 32) + 1, pc);
 }
 
-void fetch(int* pc) {
+void fetch(int* pc, Instruction* instruction) {
     int *IR = (int *) memory[bin_to_int(pc, 32)];
     pc_incr(pc);
     //initQueue(&fetch_queue);
-    enqueue(&fetch_queue, IR);
+    instruction->instruction = IR;
+    instruction->line = bin_to_int(pc, 32);
+    enqueue(&fetch_queue, instruction);
+
 }
 
 void decode(Instruction* instruction) {
-    int* instr = dequeue(&fetch_queue);
+    Instruction* instruction_dequeued = dequeue(&fetch_queue);
+    int* instr = instruction->instruction;
     //initQueue(&decode_queue);
-    enqueue(&decode_queue, instr);
-    if(bin_to_int(instr, 32)==0){
+    if(instruction_dequeued==NULL)
+    {
         return;
     }
+    enqueue(&decode_queue, instruction_dequeued);
+
+    instruction->instruction = instr;
 
     int opcode = (instr[0] << 3) | (instr[1] << 2) | (instr[2] << 1) | instr[3];
     initialize_with_zeros(instruction->shift, 2);
@@ -93,10 +100,14 @@ void decode(Instruction* instruction) {
             for (int j = 0; j < 18; j++) {
                 instruction->immediate[j]= (instr[14 + j]);
             }
-            printf("inside the outer switch case \n");
+            if (instruction->immediate[0] == 1) {
+                instruction->value = signed_immediate_to_int(instruction->immediate, 18);
+            } else {
+                instruction->value = bin_to_int(instruction->immediate, 18);
+            }
             switch (opcode) {
                 case 0x3: instruction->regW = 1; break;
-                case 0x4: printf("entered the inside switch");instruction->branch = 2; break;
+                case 0x4: instruction->branch = 2; break;
                 case 0x6: instruction->ALUsig[4] = 1; instruction->regW = 1; break;
                 case 0xA: instruction->regW = 1; instruction->memR = 1; break;
                 case 0xB: instruction->memW = 1; break;
@@ -113,7 +124,6 @@ void decode(Instruction* instruction) {
         default:
             break;
     }
-    printf("branch is : %d \n", instruction->branch);
 }
 
 int access_register_file(int * reg_num) {
@@ -121,71 +131,74 @@ int access_register_file(int * reg_num) {
     return bin_to_int(data, 32);
 }
 
-void memory_access(Instruction* instruction10, int d) {
+void memory_access(Instruction* instruction, int d) {
 
-    int * instr = dequeue(&execution_queue);
-    if(instr==NULL)
+    Instruction* instruction_dequeued = dequeue(&execution_queue);
+    if(instruction_dequeued==NULL)
     {
-        printf("hlksdfjkls Memory access queue is empty\n");
         return;
     }
-    enqueue(&memory_queue, instr);
-    if(bin_to_int(instr, 32)==0){
-        return;
-    }
-    printf(isEmpty(&memory_queue) ? "Memory queue is empty\n" : "Memory queue is not empty\n");
+    enqueue(&memory_queue, instruction_dequeued);
+
     int * data = malloc(32 * sizeof(int));
     int_to_bin32(d, data);
-    if (instruction10->memW == 0 && instruction10->memR == 0) return;
+    if (instruction->memW == 0 && instruction->memR == 0) return;
 
-    if (instruction10->memR) {
+    if (instruction->memR) {
         // printf("entered memory read\n");
         int * mem_data = memory[d+1023];
         for (int i = 0; i < 32; ++i) {
             data[i] = mem_data[i];
         }
     }
-    if (instruction10->memW) {
+    if (instruction->memW) {
         int mem_index = 1023 + d;
         int *dest = memory[mem_index];
         // printf("entered memory write\n");
         // printf("%d: \n", bin_to_int(instruction10->r1, 5));
         // printArr(registers[bin_to_int(instruction10->r1, 5)],32);
         for (int j = 0; j < 32; j++) {
-            dest[j] = registers[bin_to_int(instruction10->r1, 5)][j];
+            dest[j] = registers[bin_to_int(instruction->r1, 5)][j];
         }
     }
 }
 
-void write_back(Instruction* instruction11, int d) {
+void write_back(Instruction* instruction, int d) {
     d = 0;
-    int * instr = dequeue(&memory_queue);
-    if(instr==NULL)
+    Instruction* instruction_dequeued = dequeue(&memory_queue);
+    if(instruction_dequeued==NULL)
     {
-        printf("hlksdfjkls write back queue access queue is empty\n");
         return;
     }
-    enqueue(&writeBack_queue, instr);
-
-    if(bin_to_int(instr, 32)==0){
-        return;
-    }
+    enqueue(&writeBack_queue, instruction_dequeued);
 
     int* data = malloc(32 * sizeof(int));
-    int_to_bin32(bin_to_int(instruction11->immediate,18), data);
-    // printf("hello %d \n", instruction11->regW);
-    if (instruction11->regW) {
-        int reg_index = bin_to_int(instruction11->r1, 5);
-        // printf("Write Back to register %d: ", reg_index);
-        if(bin_to_int(instruction11->immediate,18)!=0){
-            int_to_bin32(bin_to_int(instruction11->immediate,18), registers[reg_index]);
-            // printf("Data: ");
-            // printArr(registers[reg_index], 32);
-            // printf("%d", bin_to_int(instruction11->immediate,18));
-            // printf("\n");
+    int_to_bin32(bin_to_int(instruction->immediate,18), data);
+    if (instruction->regW) {
+        int reg_index = bin_to_int(instruction->r1, 5);
+        if(reg_index==0)
+        {
+            printf("Attempted to write to R0");
+            return;
+        }
+        if(bin_to_int(instruction->immediate,18)!=0){
+            int_to_bin32(signed_immediate_to_int(instruction->immediate,18), registers[reg_index]);
         }
         else{
-            int_to_bin32(instruction11->value, registers[reg_index]);
+            printf("value: %d, reg_index: %d\n", instruction->value, reg_index);
+            int_to_bin32(instruction->value, registers[reg_index]);
         }
     }
+}
+
+int signed_immediate_to_int(int* bits, int len) {
+    int value = 0;
+        for (int i = 0; i < len; i++) {
+        value = (value << 1) | bits[i];
+    }
+    if (bits[0] == 1) { 
+        int sign_mask = ~((1 << len) - 1);
+        value |= sign_mask;
+    }
+   return value;
 }

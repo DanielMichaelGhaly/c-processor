@@ -28,10 +28,9 @@ void write_binary(int* dest, int value, int start, int bits) {
 }
 
 // Parse a single instruction line into binary representation
-void parse_instruction(const char* line, int* binary) {
-    if (line == NULL || strlen(line) == 0 || strspn(line, " \t\n") == strlen(line)) {
-        memset(binary, 0, 32 * sizeof(int));
-        return;
+int parse_instruction(const char* line, int* binary) {
+    if (line == NULL || strlen(line) == 0 || strspn(line, " \t\n") == strlen(line) || line[0]=='#') {
+        return 1;
     }
     char mnemonic[10] = {0};
     char op1[10] = {0}, op2[10] = {0}, op3[10] = {0};
@@ -39,7 +38,7 @@ void parse_instruction(const char* line, int* binary) {
 
     sscanf(line, "%9s %9[^, \t\n] %9[^, \t\n] %9[^, \t\n]", mnemonic, op1, op2, op3);
     opcode = get_opcode(mnemonic);
-    if (opcode == -1) return;
+    if (opcode == -1) return 1;
 
     memset(binary, 0, 32 * sizeof(int));
     write_binary(binary, opcode, 0, 4);
@@ -74,6 +73,7 @@ void parse_instruction(const char* line, int* binary) {
         addr = atoi(op1);
         write_binary(binary, addr, 4, 28);
     }
+    return 0;
 }
 
 void print_binary(int* binary) {

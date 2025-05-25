@@ -10,13 +10,13 @@ int bits_to_int(const int *bits, int len) {
 
 int execute(Instruction* instruction) {
 
-    int* instr = dequeue(&decode_queue);
-    if(instr==NULL)
+    Instruction* instruction_dequeued = dequeue(&decode_queue);
+    int* instr = instruction->instruction;
+    if(instruction_dequeued==NULL)
     {
-        printf("hlksdfjkls write back queue access queue is empty\n");
         return 0;
     }
-    enqueue(&execution_queue, instr);
+    enqueue(&execution_queue, instruction_dequeued);
 
     if(bin_to_int(instr, 32)==0){
         return 0;
@@ -43,18 +43,41 @@ int execute(Instruction* instruction) {
         }
     }
     if(instruction->branch > 0) {
-        switch(instruction->branch) {
-            case 1: printf("Jumping to address %d\n", bin_to_int(instruction->address, 28));
-            int_to_bin32(bin_to_int(instruction->address,28), registers[32]);
-            printf("PC now after jump : %d \n", bin_to_int(registers[32],32));
-            // flush_Queues(instr); 
-            break;
-            case 2: if(r1_val == r2_val) { 
-                pc_incr(registers[32]);
+        printf("etnerd branch if\n");
+        if(instruction->branch ==1)
+        {
+            printf("jump\n");
+            if(bin_to_int(instruction->address,28)>bin_to_int(registers[32],32))
+            {
+                printf("etnred the if of jump first");
+                completed = completed + (bin_to_int(instruction->address,28)-1)-instruction->line;
+            }
+            else if(bin_to_int(registers[32],32)>bin_to_int(instruction->address,28)){
+                completed = bin_to_int(instruction->address,28)-1;
+                instructions[instruction->line - 1].jump_backward = 1;
+                instructions[instruction->line - 2].jump_backward = 1;
+                for(int i = bin_to_int(instruction->address,28)+1;i<instruction->line;i++)
+                {
+                    initialize_instruction(&instructions[i]);
+                }
+            }
+            printf("address: %d", bin_to_int(instruction->address,28));
+            int_to_bin32(bin_to_int(registers[32],32)-1, registers[32]);
+            for(int i = 4; i<32; i++)
+            {
+                registers[32][i] = instruction->address[i-4];
+            }
+            flush_Queues(instr);
+
+        }
+        else{
+            if(r1_val==r2_val){
+                printf("they are equal\n");
+                completed = completed + bin_to_int(instruction->immediate,18)-1;
                 int temp_pc_val = bits_to_int(registers[32], 32);
-                int_to_bin32(temp_pc_val+r3_val, registers[32]);
-                // flush_Queues(instr);
-            } break;
+                int_to_bin32(temp_pc_val+bin_to_int(instruction->immediate,18)-1, registers[32]);
+                flush_Queues(instr);
+            }
         }
     }
 
@@ -75,7 +98,7 @@ int execute(Instruction* instruction) {
                 case 0: instruction2 = "LSL"; break;
                 case 1: instruction2 = "LSR"; break;
             }
-            execution_result = shifting(instruction2, r1_val, r2_val, r3_val);
+            execution_result = shifting(instruction2, r1_val, r2_val, bin_to_int(instruction->shamt,13));
         }
     }
     return execution_result;
@@ -102,34 +125,36 @@ int alu(char* instruction, int R2, int R3)
 int shifting(char* instruction, int R1, int R2, int R3)
 {
     if(strcmp(instruction, "LSL")==0){
+        printf("LSL %d = %d << %d\n", R1, R2, R3);
         R1 = R2 << R3;
     }
     else if(strcmp(instruction, "LSR")==0){
+        printf("LSL %d = %d >> %d\n", R1, R2, R3);
         R1 = R2 >> R3;
     }
     return R1;
 }
 
-// void flush_Queues(int* instr) {
-//     while(!isEmpty(&fetch_queue)) {
-//         dequeue(&fetch_queue);
-//     }
-//     printf("Flushing queues...\n");
-//     while(!isEmpty(&decode_queue)) {
-//         dequeue(&decode_queue);
-//     }
-//     printf("Flushing queues.1..\n");
-//     while(!isEmpty(&execution_queue)) {
-//         dequeue(&execution_queue);
-//     }
-//     printf("Flushing queues..2.\n");
-//     while(!isEmpty(&memory_queue)) {
-//         dequeue(&memory_queue);
-//     }
-//     printf("Flushing queues...3\n");
-//     while(!isEmpty(&writeBack_queue)) {
-//         dequeue(&writeBack_queue);
-//     }
-//     printf("Flushing queues...4\n");
-//     enqueue(&execution_queue, instr);
-// }
+void flush_Queues() {
+    while(!isEmpty(&fetch_queue)) {
+        Instruction* flushed_Instr = dequeue(&fetch_queue);
+        for(int i = 0; i<1024;i++)
+        {
+            if(flushed_Instr->line == instructions[i].line){
+                initialize_instruction(&instructions[i]);
+                break;
+            }
+        }
+    }
+    while(!isEmpty(&decode_queue)) {
+        Instruction* flushed_Instr = dequeue(&decode_queue);
+        for(int i = 0; i<1024;i++)
+        {
+            if(flushed_Instr->line == instructions[i].line){
+                initialize_instruction(&instructions[i]);
+                break;
+            }
+        }
+    }
+    
+}

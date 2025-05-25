@@ -12,6 +12,8 @@
 #include "temp_pipline.h"
 
 #define Base 1024;
+extern Instruction instructions[MAX_INSTRUCTIONS];
+extern int completed;
 
 /*
     Registers, memory and methods declaration.

@@ -3,8 +3,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <string.h>
-
-#define MAX_INSTRUCTIONS 100
+#include <stdlib.h>
+#define MAX_INSTRUCTIONS 1024
 
 typedef struct Instruction{
     int fetch;
@@ -26,9 +26,16 @@ typedef struct Instruction{
     int memW;
     int regW;
     int branch;
-    int value;
+    int value; 
+    int* instruction; 
+    int line;
+    int jump_backward;
 } Instruction;
 
 void initialize_instructions(Instruction instructions[], int size);
+
+void initialize_instruction(Instruction* instruction);
+
+void print_Instruction(Instruction* instruction);
 
 #endif

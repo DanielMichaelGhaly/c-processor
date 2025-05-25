@@ -11,6 +11,7 @@ int res_exec = 0;
     
 int total_instructions = 0;
 int clock = 0;
+int completed = 0;
 
 void printArr(int* arr, int size)
 {
@@ -39,12 +40,14 @@ void readFile(char * filePath)
     while (fgets(line, sizeof(line), fp)) {
         // Remove newline if exists
         line[strcspn(line, "\n")] = 0;
-        parse_instruction(line, binary);
-        total_instructions++;
+        // r == 0 means success else r==1 means empty line or comment
+        int r = parse_instruction(line, binary);
+        printf("r: %d", r);
         // printf("Instruction %d: ", line_number++);
         // print_binary(binary);
-        if(i<1024)
+        if(r==0&&i<1024)
         {
+            total_instructions++;
             for(; j<32; j++)
             {
                 memory[i][j] = binary[j];
@@ -59,15 +62,6 @@ void readFile(char * filePath)
 
 int main()
 {
-    int* test = malloc(32* sizeof(int));
-    int_to_bin32(-5,test);
-    printArr(test,32);
-
-    printf("number : %d \n",bin_to_int(test,32));
-
-    int_to_bin32(5, test);
-    printArr(test,32);
-    printf("number1 : %d\n",bin_to_int(test,32));
 
     initQueue(&fetch_queue);
     initQueue(&decode_queue);
@@ -77,29 +71,35 @@ int main()
     init_logger("data/log.txt");
     readFile("data/test.txt");
 
-    Instruction instructions[MAX_INSTRUCTIONS];
 
     initialize_instructions(instructions, total_instructions);
 
     int cycle = 1;
-    int completed = 0;
     int last_fetch_cycle = -2;
     int memory_busy = 0;
 
     printf("Total Instructions: %d\n", total_instructions);
-    while (completed < total_instructions) {
+    while (completed<total_instructions) {
         memory_busy = 0;
-
+        printf("Completed till now %d\n",completed);
         for (int i = 0; i < total_instructions; i++) {
             if (instructions[i].completed) continue;
-
+            
             // Write Back
             if (instructions[i].memory != -1 && instructions[i].write_back == -1 && cycle > instructions[i].memory) {
                 instructions[i].write_back = cycle;
-                instructions[i].completed = 1;
-                completed++;
-                write_back(&instructions[i], res_exec);
-                printf("Finished write back. ");
+                write_back(&instructions[i],instructions[i].value);
+                if(instructions[i].jump_backward==0)
+                {
+                    instructions[i].completed = 1;
+                    completed++;
+                }
+                else{
+                    instructions[i].jump_backward = 0;
+                }
+                printf("entered write back stage");
+
+                // printf("Finished write back. ");
                 continue;
             }
 
@@ -107,8 +107,9 @@ int main()
             if (instructions[i].execute_end != -1 && instructions[i].memory == -1 && cycle > instructions[i].execute_end && !memory_busy) {
                 instructions[i].memory = cycle;
                 memory_busy = 1;
-                memory_access(&instructions[i],res_exec);
-                printf("Finished memory access. ");
+                memory_access(&instructions[i],instructions[i].value);
+                printf("entered memory stage");
+                // printf("Finished memory access. ");
                 continue;
             }
             // Execute (2 cycles)
@@ -117,10 +118,13 @@ int main()
                 instructions[i].execute_end = cycle + 1;
                 res_exec = execute(&instructions[i]);
                 instructions[i].value = res_exec;
-                printf("Finished execution. ");
+                // printf("Finished execution. \n");
+                // printf("After executing instruction:\n");
+                // print_Instruction(&(instructions[i]));
                 // printf("Instruction %d : %d", i, instructions[i].value);
                 // printf("result : %d", res_exec);
                 // printf("\n");
+                printf("entered execute stage");
                 continue;
             }
 
@@ -129,7 +133,9 @@ int main()
                 instructions[i].decode_start = cycle;
                 instructions[i].decode_end = cycle + 1;
                 decode(&instructions[i]);
-                printf("Finished decode. ");
+                // printf("Finished decode. ");
+                // printf("After decoding instruction:\n");
+                // print_Instruction(&(instructions[i]));
                 // printf("r1: ");
                 // printf("cycle: %d", cycle);
                 // printf("\n");
@@ -144,6 +150,7 @@ int main()
                 // printf("%d, %d, %d, %d",memR,memW,regW,branch);
                 // printf("\n");
                 // printf("regsgdgs %d", instructions[i].regW);
+                printf("entered decode stage");
                 continue;
             }
 
@@ -151,17 +158,24 @@ int main()
             if (instructions[i].fetch == -1 && cycle - last_fetch_cycle > 1 && !memory_busy) {
                 instructions[i].fetch = cycle;
                 last_fetch_cycle = cycle;
-                fetch(registers[32]);
-                printf("Finished fetch. ");
+                fetch(registers[32], &(instructions[i]));
+                printf("entered fetch stage");
+                // printf("Outside fetch function\n");
+                // print_Instruction(&(instructions[i]));
+                // printf("Finished fetch. ");
+                // printf("After fetching instruction:\n");
+                // print_Instruction(&(instructions[i]));
                 // int* firstInstruction = peek(&fetch_queue);
                 // printArr(firstInstruction);
-                break;
+                continue;
             }
         }
         printf("PC: ");
         printArr(registers[32], 32);
         printf("Cycles : %d", cycle);
         printf("\n");
+        printf("Instruction: ");
+        printArr((int *) memory[bin_to_int(registers[32], 32)],32);
         // printf("R1: ");
         // printArr(registers[1], 32);
         // printf("R2: ");
@@ -182,13 +196,14 @@ int main()
     }
 
     for(int i = 0; i < 2048; i++) {
-        int_array_to_binary_string(memory[i]);
+        int_array_to_binary_string(memory[i],-1);
     }
 
     log_print("Registers:");
     for(int i = 0; i<33 ;i++)
     {
-        int_array_to_binary_string(registers[i]);
+        int_array_to_binary_string(registers[i],i);
+        printf("%d: \n", bin_to_int(registers[i], 32));
     }
     
     close_logger();
