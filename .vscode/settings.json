@@ -2,6 +2,12 @@
   "files.associations": {
     "fetch-decode.h": "c",
     "stdio.h": "c",
-    "xmemory": "c"
+    "xmemory": "c",
+    "deque": "c",
+    "queue": "c",
+    "vector": "c",
+    "xstring": "c",
+    "xutility": "c",
+    "string.h": "c"
   }
 }

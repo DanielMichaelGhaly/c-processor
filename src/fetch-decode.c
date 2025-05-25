@@ -51,6 +51,9 @@ void decode(Instruction* instruction) {
     int* instr = dequeue(&fetch_queue);
     //initQueue(&decode_queue);
     enqueue(&decode_queue, instr);
+    if(bin_to_int(instr, 32)==0){
+        return;
+    }
 
     int opcode = (instr[0] << 3) | (instr[1] << 2) | (instr[2] << 1) | instr[3];
     initialize_with_zeros(instruction->shift, 2);
@@ -90,10 +93,10 @@ void decode(Instruction* instruction) {
             for (int j = 0; j < 18; j++) {
                 instruction->immediate[j]= (instr[14 + j]);
             }
-
+            printf("inside the outer switch case \n");
             switch (opcode) {
                 case 0x3: instruction->regW = 1; break;
-                case 0x4: instruction->branch = 1; break;
+                case 0x4: printf("entered the inside switch");instruction->branch = 2; break;
                 case 0x6: instruction->ALUsig[4] = 1; instruction->regW = 1; break;
                 case 0xA: instruction->regW = 1; instruction->memR = 1; break;
                 case 0xB: instruction->memW = 1; break;
@@ -110,6 +113,7 @@ void decode(Instruction* instruction) {
         default:
             break;
     }
+    printf("branch is : %d \n", instruction->branch);
 }
 
 int access_register_file(int * reg_num) {
@@ -122,16 +126,20 @@ void memory_access(Instruction* instruction10, int d) {
     int * instr = dequeue(&execution_queue);
     if(instr==NULL)
     {
+        printf("hlksdfjkls Memory access queue is empty\n");
         return;
     }
     enqueue(&memory_queue, instr);
-
+    if(bin_to_int(instr, 32)==0){
+        return;
+    }
+    printf(isEmpty(&memory_queue) ? "Memory queue is empty\n" : "Memory queue is not empty\n");
     int * data = malloc(32 * sizeof(int));
     int_to_bin32(d, data);
     if (instruction10->memW == 0 && instruction10->memR == 0) return;
 
     if (instruction10->memR) {
-        printf("entered memory read\n");
+        // printf("entered memory read\n");
         int * mem_data = memory[d+1023];
         for (int i = 0; i < 32; ++i) {
             data[i] = mem_data[i];
@@ -140,9 +148,9 @@ void memory_access(Instruction* instruction10, int d) {
     if (instruction10->memW) {
         int mem_index = 1023 + d;
         int *dest = memory[mem_index];
-        printf("entered memory write\n");
-        printf("%d: \n", bin_to_int(instruction10->r1, 5));
-        printArr(registers[bin_to_int(instruction10->r1, 5)],32);
+        // printf("entered memory write\n");
+        // printf("%d: \n", bin_to_int(instruction10->r1, 5));
+        // printArr(registers[bin_to_int(instruction10->r1, 5)],32);
         for (int j = 0; j < 32; j++) {
             dest[j] = registers[bin_to_int(instruction10->r1, 5)][j];
         }
@@ -154,22 +162,27 @@ void write_back(Instruction* instruction11, int d) {
     int * instr = dequeue(&memory_queue);
     if(instr==NULL)
     {
+        printf("hlksdfjkls write back queue access queue is empty\n");
         return;
     }
     enqueue(&writeBack_queue, instr);
 
+    if(bin_to_int(instr, 32)==0){
+        return;
+    }
+
     int* data = malloc(32 * sizeof(int));
     int_to_bin32(bin_to_int(instruction11->immediate,18), data);
-    printf("hello %d \n", instruction11->regW);
+    // printf("hello %d \n", instruction11->regW);
     if (instruction11->regW) {
         int reg_index = bin_to_int(instruction11->r1, 5);
-        printf("Write Back to register %d: ", reg_index);
+        // printf("Write Back to register %d: ", reg_index);
         if(bin_to_int(instruction11->immediate,18)!=0){
             int_to_bin32(bin_to_int(instruction11->immediate,18), registers[reg_index]);
-            printf("Data: ");
-            printArr(registers[reg_index], 32);
-            printf("%d", bin_to_int(instruction11->immediate,18));
-            printf("\n");
+            // printf("Data: ");
+            // printArr(registers[reg_index], 32);
+            // printf("%d", bin_to_int(instruction11->immediate,18));
+            // printf("\n");
         }
         else{
             int_to_bin32(instruction11->value, registers[reg_index]);

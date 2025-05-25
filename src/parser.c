@@ -29,6 +29,10 @@ void write_binary(int* dest, int value, int start, int bits) {
 
 // Parse a single instruction line into binary representation
 void parse_instruction(const char* line, int* binary) {
+    if (line == NULL || strlen(line) == 0 || strspn(line, " \t\n") == strlen(line)) {
+        memset(binary, 0, 32 * sizeof(int));
+        return;
+    }
     char mnemonic[10] = {0};
     char op1[10] = {0}, op2[10] = {0}, op3[10] = {0};
     int opcode, reg1, reg2, reg3, imm, addr;

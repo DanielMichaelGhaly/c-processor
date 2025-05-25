@@ -15,7 +15,6 @@ void initialize_instructions(Instruction instructions[], int size) {
         instructions[i].memW = 0;
         instructions[i].regW = 0;
         instructions[i].branch = 0;
-        instructions[i].value = 0;
         for (int j = 0; j < 5; j++) {
             instructions[i].r1[j] = 0;
             instructions[i].r2[j] = 0;

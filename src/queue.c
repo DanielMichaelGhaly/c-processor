@@ -1,7 +1,5 @@
 #include "queue.h"
 
-
-
 void initQueue(Queue *q){
     q ->front = -1;
     q ->back = -1;

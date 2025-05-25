@@ -59,6 +59,15 @@ void readFile(char * filePath)
 
 int main()
 {
+    int* test = malloc(32* sizeof(int));
+    int_to_bin32(-5,test);
+    printArr(test,32);
+
+    printf("number : %d \n",bin_to_int(test,32));
+
+    int_to_bin32(5, test);
+    printArr(test,32);
+    printf("number1 : %d\n",bin_to_int(test,32));
 
     initQueue(&fetch_queue);
     initQueue(&decode_queue);
@@ -77,6 +86,7 @@ int main()
     int last_fetch_cycle = -2;
     int memory_busy = 0;
 
+    printf("Total Instructions: %d\n", total_instructions);
     while (completed < total_instructions) {
         memory_busy = 0;
 
@@ -89,6 +99,7 @@ int main()
                 instructions[i].completed = 1;
                 completed++;
                 write_back(&instructions[i], res_exec);
+                printf("Finished write back. ");
                 continue;
             }
 
@@ -97,6 +108,7 @@ int main()
                 instructions[i].memory = cycle;
                 memory_busy = 1;
                 memory_access(&instructions[i],res_exec);
+                printf("Finished memory access. ");
                 continue;
             }
             // Execute (2 cycles)
@@ -105,7 +117,8 @@ int main()
                 instructions[i].execute_end = cycle + 1;
                 res_exec = execute(&instructions[i]);
                 instructions[i].value = res_exec;
-                printf("Instruction %d : %d", i, instructions[i].value);
+                printf("Finished execution. ");
+                // printf("Instruction %d : %d", i, instructions[i].value);
                 // printf("result : %d", res_exec);
                 // printf("\n");
                 continue;
@@ -116,6 +129,8 @@ int main()
                 instructions[i].decode_start = cycle;
                 instructions[i].decode_end = cycle + 1;
                 decode(&instructions[i]);
+                printf("Finished decode. ");
+                // printf("r1: ");
                 // printf("cycle: %d", cycle);
                 // printf("\n");
                 // printArr(r1,5);
@@ -137,6 +152,7 @@ int main()
                 instructions[i].fetch = cycle;
                 last_fetch_cycle = cycle;
                 fetch(registers[32]);
+                printf("Finished fetch. ");
                 // int* firstInstruction = peek(&fetch_queue);
                 // printArr(firstInstruction);
                 break;

@@ -9,8 +9,18 @@ int bits_to_int(const int *bits, int len) {
 }
 
 int execute(Instruction* instruction) {
+
     int* instr = dequeue(&decode_queue);
+    if(instr==NULL)
+    {
+        printf("hlksdfjkls write back queue access queue is empty\n");
+        return 0;
+    }
     enqueue(&execution_queue, instr);
+
+    if(bin_to_int(instr, 32)==0){
+        return 0;
+    }
 
     int execution_result = 0;
 
@@ -34,11 +44,16 @@ int execute(Instruction* instruction) {
     }
     if(instruction->branch > 0) {
         switch(instruction->branch) {
-            case 1: int_to_bin32(r1_val, registers[32]); break;
+            case 1: printf("Jumping to address %d\n", bin_to_int(instruction->address, 28));
+            int_to_bin32(bin_to_int(instruction->address,28), registers[32]);
+            printf("PC now after jump : %d \n", bin_to_int(registers[32],32));
+            // flush_Queues(instr); 
+            break;
             case 2: if(r1_val == r2_val) { 
                 pc_incr(registers[32]);
                 int temp_pc_val = bits_to_int(registers[32], 32);
                 int_to_bin32(temp_pc_val+r3_val, registers[32]);
+                // flush_Queues(instr);
             } break;
         }
     }
@@ -68,29 +83,53 @@ int execute(Instruction* instruction) {
 
 
 
-int alu(char* instruction3, int R2, int R3)
+int alu(char* instruction, int R2, int R3)
 {
-    if (strcmp(instruction3, "ADD") == 0) {
+    if (strcmp(instruction, "ADD") == 0) {
         return R2 + R3;
-    } else if (strcmp(instruction3, "SUB") == 0) {
+    } else if (strcmp(instruction, "SUB") == 0) {
         return R2 - R3;
-    } else if (strcmp(instruction3, "MUL") == 0) {
+    } else if (strcmp(instruction, "MUL") == 0) {
         return R2 * R3;
-    } else if (strcmp(instruction3, "AND") == 0) {
+    } else if (strcmp(instruction, "AND") == 0) {
         return R2 & R3;
-    } else if (strcmp(instruction3, "XORI") == 0) {
+    } else if (strcmp(instruction, "XORI") == 0) {
         return R2 ^ R3;
     }
     return 0;
 }
 
-int shifting(char* instruction4, int R1, int R2, int R3)
+int shifting(char* instruction, int R1, int R2, int R3)
 {
-    if(strcmp(instruction4, "LSL")==0){
+    if(strcmp(instruction, "LSL")==0){
         R1 = R2 << R3;
     }
-    else if(strcmp(instruction4, "LSR")==0){
+    else if(strcmp(instruction, "LSR")==0){
         R1 = R2 >> R3;
     }
     return R1;
 }
+
+// void flush_Queues(int* instr) {
+//     while(!isEmpty(&fetch_queue)) {
+//         dequeue(&fetch_queue);
+//     }
+//     printf("Flushing queues...\n");
+//     while(!isEmpty(&decode_queue)) {
+//         dequeue(&decode_queue);
+//     }
+//     printf("Flushing queues.1..\n");
+//     while(!isEmpty(&execution_queue)) {
+//         dequeue(&execution_queue);
+//     }
+//     printf("Flushing queues..2.\n");
+//     while(!isEmpty(&memory_queue)) {
+//         dequeue(&memory_queue);
+//     }
+//     printf("Flushing queues...3\n");
+//     while(!isEmpty(&writeBack_queue)) {
+//         dequeue(&writeBack_queue);
+//     }
+//     printf("Flushing queues...4\n");
+//     enqueue(&execution_queue, instr);
+// }
