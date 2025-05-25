@@ -24,7 +24,7 @@ for (int j=0; j<2048;j++){
 
 //Clock: 
 static int clk_cycle = 0;
-
+static int jflag = 0;
 
 //Creating Registers: 
 int R1[32] = {0};
@@ -142,6 +142,112 @@ QUEUE WB_stage;
 
 
 
+/* 1. reading from the ram ----> string 
+   2. convert the string of binary to an int
+   3. Created a function that does both; read from the ram and convert to int directly
+   4. reading from register -----> int
+   5. writing int to register
+
+*/
+
+//1. 
+char* read_from_ram_and_convert_to_str(int* row){
+  char* str = malloc(33*sizeof(char));
+  for(int i=0;i<32;i++){
+    str[i] = row[i] +'0';
+  }
+  str[32] = '\0';
+  return str;
+}
+
+//2. 
+int convert_from_binary_string_to_int(const char* str) {
+    int length = strlen(str);
+
+    // Convert binary string to unsigned integer
+    uint32_t value = (uint32_t)strtoul(str, NULL, 2);
+
+    // If MSB is 1 (i.e., str[0] == '1'), perform manual sign-extension
+    if (str[0] == '1') {
+        // Two's complement: subtract 2^length
+        return (int)(value - (1U << length)+1);
+    }
+
+    return (int)value;
+}
+
+//3.
+int read_from_ram_and_convert_to_int(int* row){
+  char* str = read_from_ram_and_convert_to_str(row);
+  int x = convert_from_binary_string_to_int(str);
+  return x;
+
+}
+
+//4. 
+int read_from_register_and_convert_to_int(int reg[32]) {
+    unsigned int value = 0;
+
+    // Build the integer value from the register bits
+    for (int i = 0; i < 32; i++) {
+        value = (value << 1) | (reg[i] & 1);  // Shift left and add the current bit
+    }
+
+    // If the MSB (reg[0]) is 1, apply two's complement adjustment
+    if (reg[0] == 1) {
+        value -= (1ULL << 32);  // Equivalent to value - 2^32
+    }
+
+    return (int)value;  // Cast to signed int
+}
+
+//5. 
+void write_int_into_register(int value, int reg[32]) {
+    for (int i = 31; i >= 0; i--) {
+        reg[31 - i] = (value >> i) & 1;  // MSB to LSB
+    }
+}
+
+
+int* get_register_by_number(int reg_num) {
+    switch (reg_num) {
+        case 0:  return (int*)R0;
+        case 1:  return R1;
+        case 2:  return R2;
+        case 3:  return R3;
+        case 4:  return R4;
+        case 5:  return R5;
+        case 6:  return R6;
+        case 7:  return R7;
+        case 8:  return R8;
+        case 9:  return R9;
+        case 10: return R10;
+        case 11: return R11;
+        case 12: return R12;
+        case 13: return R13;
+        case 14: return R14;
+        case 15: return R15;
+        case 16: return R16;
+        case 17: return R17;
+        case 18: return R18;
+        case 19: return R19;
+        case 20: return R20;
+        case 21: return R21;
+        case 22: return R22;
+        case 23: return R23;
+        case 24: return R24;
+        case 25: return R25;
+        case 26: return R26;
+        case 27: return R27;
+        case 28: return R28;
+        case 29: return R29;
+        case 30: return R30;
+        case 31: return R31;
+        default: return NULL;  // Invalid register number
+    }
+}
+
+
 
 // function that will be used later as a signal for write back stage:
 int get_register_number(int* arr) {
@@ -244,7 +350,7 @@ int multiply(int R1[32], int R2[32], int R3[32]){
 
 //4. MOVI: (done)
 int move_immediate(int R1[32], int IMM){
-  int tmp0 = read_from_register_and_convert_to_int(R0);
+  int tmp0 = 0;
   int tmp1 = IMM;
   int res = tmp0+tmp1;
   printf("I am currently putting the content of Immediate into ALU which will be saved later in Regs%d\n",get_register_number(R1));
@@ -263,11 +369,13 @@ int jump_if_equal(int R1[32], int R2[32], int IMM){
   int pctmp = read_from_register_and_convert_to_int(PC);
   int res = 0;
   if(tmp1 == tmp2 && IMM >=0){
+    jflag = 1;
     res = pctmp + IMM;
   }
   else{
     res = -1;
   }
+  res -=1;
   printf("I am currently checking if the content of Regs%d is equal to the content of Regs%d, jump to immediate address\n",get_register_number(R1),get_register_number(R2));
   printf("Contents of the Registers: \n");
   printf("Reg%d: %d\n",get_register_number(R1),tmp1);
@@ -275,6 +383,11 @@ int jump_if_equal(int R1[32], int R2[32], int IMM){
   printf("Immediate Value: %d\n",IMM);
   write_int_into_register(res,ALU);
   printf("Now the ALU is: %d\n",res);
+  if(jflag == 1){
+    printf("PC before: %d\n",read_from_register_and_convert_to_int(PC));
+    write_int_into_register(res,PC);
+    printf("PC is updated to ---> %d\n",res);
+  }
   return res;
 
 }
@@ -311,6 +424,7 @@ int exclusive_or_immediate(int R1[32], int R2[32], int IMM){
 
 //8. JMP: (done)
 int jump(int ADDRESS){
+  jflag = 1;
   int res = 0;
   //char *two = malloc(sizeof(char)*29);
   //two = int_to_28bit_binary(ADDRESS);
@@ -319,7 +433,7 @@ int jump(int ADDRESS){
     one[i] = PC[i] +'0';
   }
   one[4] = '\0';
-  char result[32];
+  char result[33];
   strcpy(result, one);  
   strcat(result, int_to_28bit_binary(ADDRESS));
   res = convert_from_binary_string_to_int(result);
@@ -328,6 +442,9 @@ int jump(int ADDRESS){
   printf("We will Jump the PC by some factor(Address = %d)\n",ADDRESS);
   write_int_into_register(res,ALU);
   printf("Now the ALU is: %d\n",res);
+  printf("PC before: %d\n",read_from_register_and_convert_to_int(PC));
+  write_int_into_register(res,PC);
+  printf("PC is updated to ---> %d\n",res);
   return get_register_number(PC);
   
 }
@@ -391,117 +508,11 @@ void init(){
 }
 
 
-
-/* 1. reading from the ram ----> string 
-   2. convert the string of binary to an int
-   3. Created a function that does both; read from the ram and convert to int directly
-   4. reading from register -----> int
-   5. writing int to register
-
-*/
-
-//1. 
-char* read_from_ram_and_convert_to_str(int* row){
-  char* str = malloc(33*sizeof(char));
-  for(int i=0;i<32;i++){
-    str[i] = row[i] +'0';
-  }
-  str[32] = '\0';
-  return str;
-}
-
-//2. 
-int convert_from_binary_string_to_int(const char* str) {
-    int length = strlen(str);
-
-    // Convert binary string to unsigned integer
-    uint32_t value = (uint32_t)strtoul(str, NULL, 2);
-
-    // If MSB is 1 (i.e., str[0] == '1'), perform manual sign-extension
-    if (str[0] == '1') {
-        // Two's complement: subtract 2^length
-        return (int)(value - (1U << length)+1);
-    }
-
-    return (int)value;
-}
-
-//3.
-int read_from_ram_and_convert_to_int(int* row){
-  char* str = read_from_ram_and_convert_to_str(row);
-  int x = convert_from_binary_string_to_int(str);
-  return x;
-
-}
-
-//4. 
-int read_from_register_and_convert_to_int(int reg[32]) {
-    unsigned int value = 0;
-
-    // Build the integer value from the register bits
-    for (int i = 0; i < 32; i++) {
-        value = (value << 1) | (reg[i] & 1);  // Shift left and add the current bit
-    }
-
-    // If the MSB (reg[0]) is 1, apply two's complement adjustment
-    if (reg[0] == 1) {
-        value -= (1UL << 32);  // Equivalent to value - 2^32
-    }
-
-    return (int)value;  // Cast to signed int
-}
-
-//5. 
-void write_int_into_register(int value, int reg[32]) {
-    for (int i = 31; i >= 0; i--) {
-        reg[31 - i] = (value >> i) & 1;  // MSB to LSB
-    }
-}
-
-
-int* get_register_by_number(int reg_num) {
-    switch (reg_num) {
-        case 0:  return R0;
-        case 1:  return R1;
-        case 2:  return R2;
-        case 3:  return R3;
-        case 4:  return R4;
-        case 5:  return R5;
-        case 6:  return R6;
-        case 7:  return R7;
-        case 8:  return R8;
-        case 9:  return R9;
-        case 10: return R10;
-        case 11: return R11;
-        case 12: return R12;
-        case 13: return R13;
-        case 14: return R14;
-        case 15: return R15;
-        case 16: return R16;
-        case 17: return R17;
-        case 18: return R18;
-        case 19: return R19;
-        case 20: return R20;
-        case 21: return R21;
-        case 22: return R22;
-        case 23: return R23;
-        case 24: return R24;
-        case 25: return R25;
-        case 26: return R26;
-        case 27: return R27;
-        case 28: return R28;
-        case 29: return R29;
-        case 30: return R30;
-        case 31: return R31;
-        default: return NULL;  // Invalid register number
-    }
-}
-
-
 void finalprinter(){
   printf(" \n");
   printf(" \n");
   printf(" \n");
+  printf("Reg0: %d\n",read_from_register_and_convert_to_int((int*)R0));
   for (int i=1;i<=31;i++){
     printf("Reg%d: %d\n",i,read_from_register_and_convert_to_int(get_register_by_number(i)));
   }
@@ -529,7 +540,7 @@ void fetch(){
 } 
 
 Data decode(){
-  printf("I am currently Decoding 👨🏿‍💻, (instruction: %s = %d)\n",read_from_ram_and_convert_to_str(&IR),read_from_register_and_convert_to_int(IR));
+  printf("I am currently Decoding 👨🏿‍💻, (instruction: %s = %d)\n",read_from_ram_and_convert_to_str(IR),read_from_register_and_convert_to_int(IR));
   char opcd[5];
   for(int i=0;i<4;i++){
     opcd[i]= IR[i]+'0';
@@ -539,7 +550,7 @@ Data decode(){
   printf("The OPCODE of instruction being decoded is %s = %d\n",opcd,q);
   Data d = initD();
   d.opcode = q;
-  d.inst = read_from_ram_and_convert_to_str(&IR);
+  d.inst = read_from_ram_and_convert_to_str(IR);
   if (q == 0 || q == 1 || q == 2 || q == 5 || q == 8 || q == 9) {
     char Regs1[6];
     char Regs2[6];
@@ -592,17 +603,24 @@ Data decode(){
       Im[i]= IR[14+i]+'0';
     }
     Im[18]='\0';
+    char Imm[33];
     int w = (unsigned int)strtoul(Regs1, NULL, 2);
     int e = (unsigned int)strtoul(Regs2, NULL, 2);
     int r = (unsigned int)strtoul(Im, NULL, 2); //only positive :(
     d.opcode = q;
     d.R1 = w;
     d.R2 = e;
-    d.IMM = r;
+    if(Im[0] == '1')
+      strcpy(Imm,"11111111111111");
+    else
+      strcpy(Imm,"00000000000000");
+    strcat(Imm,Im);
+      int rr = convert_from_binary_string_to_int(Imm);
+    d.IMM = rr;
     printf("The instruction being decoded is I-Format:\n");
     printf("R1: reg%d\n",w);
     printf("R2: reg%d\n",e);
-    printf("Immediate Value: %d\n",r);
+    printf("Immediate Value: %d\n",rr);
   }
   if(q==7){
     char Ad[29];
@@ -650,7 +668,7 @@ Data execute(Data* d){
           break; 
         case 4:
           z = jump_if_equal(get_register_by_number(d->R1),get_register_by_number(d->R2),d->IMM);
-          d->exec = read_from_register_and_convert_to_int(ALU);
+          d->exec = read_from_register_and_convert_to_int(PC);
           d->sig = z;
           break; 
         case 5: 
@@ -698,6 +716,17 @@ Data execute(Data* d){
 
 Data Memory(Data* d){
   printf("I am Currently in the memory phase 📝 (instruction: %s)\n",d->inst);
+  if(jflag==1){
+    while(isEmpty(&decode_stage)==0){
+      dequeue(&decode_stage);
+    }
+    while(isEmpty(&exec_stage)==0){
+      dequeue(&exec_stage);
+    }
+    jflag = 0;
+  }
+  
+
   if(d->opcode == 10){
      printf("I have now accessed Ram[%d]\n",d->exec);
      int z = read_from_ram_and_convert_to_int(ram[d->exec]);
@@ -739,22 +768,26 @@ void write_back(Data* d){
       printf("Regs%d after: %d\n",d->sig,d->exec);
       break;
     case 4:
-      if(d->sig == -1){
+      if(d->sig == -3){
         printf("No jumping... PC will not be modified\n");
         break;
       }
       else{
-        printf("The register that is being modified is the PC\n");
+        printf("The PC was already Jumped in the execute stage \n");
+        /*printf("The register that is being modified is the PC\n");
         printf("PC before: %d\n",read_from_register_and_convert_to_int(PC));
         write_int_into_register(d->exec,PC);
-        printf("PC after: %d\n",d->exec);
+        printf("PC after: %d\n",d->exec);*/
+        jflag = 0;
         break;
       }
     case 7: 
-      printf("The register that is being modified is the PC\n");
+      printf("The PC was already Jumped in the execute stage \n");
+      /*printf("The register that is being modified is the PC\n");
       printf("PC before: %d\n",read_from_register_and_convert_to_int(PC));
       write_int_into_register(d->exec,PC);
-      printf("PC after: %d\n",d->exec);
+      printf("PC after: %d\n",d->exec);*/
+      jflag = 0;
       break;
     case 11:
       printf("This instruction was already finished from the memory phase\n");
@@ -783,29 +816,24 @@ int imain(int ic){
   init_queue(&mem_stage);
   init_queue(&WB_stage);
   //init();
-  printf("Test: %s\n",read_from_ram_and_convert_to_str(ram[0]));
-  write_int_into_register(537149441,IR);
+  /*write_int_into_register(537149441,IR);
   write_int_into_register(50,R1);
   write_int_into_register(10,R2);
-  write_int_into_register(-50,R4);
-  /*enqueue(&decode_stage,decode());
-  Data zz;
-  zz = dequeue(&decode_stage);
-  Data qq;
-  qq = execute(&zz);
-  Data yy;
-  yy = Memory(&qq);
-  write_back(&yy);
-*/
-  
+  write_int_into_register(-50,R4);*/
+  write_int_into_register(5,R1);
+  write_int_into_register(5,R2);
+  //write_int_into_register(-50,R4);
 
 
   for(int i=0;i<lc;i++){
     clk_cycle ++;
-    printf(" \n");
-    printf("Cycle Num: %d\n",clk_cycle);
+    int value_inside_pc = read_from_register_and_convert_to_int(PC);
+    
+      printf(" \n");
+      printf("Cycle Num: %d\n",clk_cycle);
+    
     if(clk_cycle % 2 != 0){
-      if(fc <ic){ 
+      if(fc <ic  && read_from_ram_and_convert_to_int(ram[value_inside_pc]) != 0){ 
         fetch();
         fc++;
       }
@@ -841,7 +869,7 @@ int imain(int ic){
 
     }
   fflush(stdout);  
-  Sleep(1000);  // Pause for 1 second
+  Sleep(500);  // Pause for 1 second
 
   }
   finalprinter();
