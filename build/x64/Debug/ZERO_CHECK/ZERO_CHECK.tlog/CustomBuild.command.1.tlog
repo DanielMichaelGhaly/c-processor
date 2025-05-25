@@ -1,0 +1,10 @@
+^D:\DANIELDESKTOP\GUC\3RD_YEAR_2ND_SEMESTER\CA\C-PROCESSOR\BUILD\CMAKEFILES\05A93E6280D794D26C0B72437A534A82\GENERATE.STAMP.RULE
+setlocal
+D:\cmake\bin\cmake.exe -SD:/DanielDesktop/GUC/3rd_year_2nd_semester/CA/c-processor -BD:/DanielDesktop/GUC/3rd_year_2nd_semester/CA/c-processor/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file D:/DanielDesktop/GUC/3rd_year_2nd_semester/CA/c-processor/build/C_PROJECT.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
