@@ -826,18 +826,22 @@ int imain(int ic){
 
 
   for(int i=0;i<lc;i++){
-    clk_cycle ++;
     int value_inside_pc = read_from_register_and_convert_to_int(PC);
-    
+    int current_inst = read_from_ram_and_convert_to_int(ram[value_inside_pc]);
+    if(isEmpty(&decode_stage)==1 && isEmpty(&exec_stage)==1 && isEmpty(&mem_stage)==1 && current_inst==0 && fc==0){
+      break;
+    }
+      clk_cycle ++;
       printf(" \n");
+      
       printf("Cycle Num: %d\n",clk_cycle);
     
     if(clk_cycle % 2 != 0){
-      if(fc <ic  && read_from_ram_and_convert_to_int(ram[value_inside_pc]) != 0){ 
+      if(current_inst != 0){ 
         fetch();
         fc++;
       }
-      if(isEmpty(&mem_stage)==0 && wc<ic){
+      if(isEmpty(&mem_stage)==0){
         Data pp = dequeue(&mem_stage);
         write_back(&pp);
         wc++;
@@ -845,19 +849,19 @@ int imain(int ic){
 
     }
     else{
-      if(dc < ic){
         enqueue(&decode_stage,decode());
+        fc--;
         dc++;
-      }
+
       if(clk_cycle>2){
-        if(isEmpty(&decode_stage)==0 && ec<ic){
+        if(isEmpty(&decode_stage)==0){
           Data ee = dequeue(&decode_stage);
           Data ff = execute(&ee);
           enqueue(&exec_stage,ff);
           ec++;
         }
         if(clk_cycle>4){
-          if(isEmpty(&exec_stage)==0 && mc<ic){
+          if(isEmpty(&exec_stage)==0 ){
             Data mm = dequeue(&exec_stage);
             Data m = Memory(&mm);
             enqueue(&mem_stage,m);
