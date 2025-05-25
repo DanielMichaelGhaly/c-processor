@@ -85,15 +85,14 @@ void decode(Instruction* instruction) {
             break;
         }
         case 0x3: case 0x4: case 0x6: case 0xA: case 0xB: {
-            instruction->r1[0] = instr[4] ; instruction->r1[1] = instr[5]; instruction->r1[2] = instr[6]; instruction->r1[3] = instr[7]; instruction->r1[4] = instr[8];
+            instruction->r1[0] = instr[4]; instruction->r1[1] = instr[5]; instruction->r1[2] = instr[6]; instruction->r1[3] = instr[7]; instruction->r1[4] = instr[8];
             instruction->r2[0] = instr[9]; instruction->r2[1] = instr[10]; instruction->r2[2] = instr[11]; instruction->r2[3] = instr[12]; instruction->r2[4] = instr[13];
             for (int j = 0; j < 18; j++) {
-                instruction->immediate[j]= (instr[14 + j]);
+            instruction->immediate[j] = instr[14 + j];
             }
-
             switch (opcode) {
                 case 0x3: instruction->regW = 1; break;
-                case 0x4: instruction->branch = 1; break;
+                case 0x4: instruction->branch = 2; break;
                 case 0x6: instruction->ALUsig[4] = 1; instruction->regW = 1; break;
                 case 0xA: instruction->regW = 1; instruction->memR = 1; break;
                 case 0xB: instruction->memW = 1; break;
