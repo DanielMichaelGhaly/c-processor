@@ -29,31 +29,33 @@ void close_logger() {
     }
 }
 
-void log_print(const char* msg, char* file_name) {
+void log_print(const char* msg, char* file_name, int num) {
     if (log_file_memory != NULL && log_file_registers != NULL) {
         if(strcmp(file_name, "registers") == 0) {
-            fprintf(log_file_registers, "%s\n", msg);
+            if(num == 32) {
+                fprintf(log_file_registers, "PC = %s\n", msg);
+            } else {
+                fprintf(log_file_registers, "R%d: %s\n", num, msg);
+            }
             fflush(log_file_registers); 
         } else if(strcmp(file_name, "memory") == 0) {
-            fprintf(log_file_memory, "%s\n", msg);
+            fprintf(log_file_memory, "Address %d: %s\n", num, msg);
             fflush(log_file_memory);  
         }
     }
 }
 
-void int_array_to_binary_string(int* arr, int num) {
+void int_array_to_binary_string(int* arr, int signal, int num) {
     char *binary_string;
     binary_string = malloc(33*sizeof(char)); 
     for (int i = 0; i < 32; i++) {
         binary_string[i] = arr[i] ? '1' : '0';
     }
     binary_string[32] = '\0';  
-    if(num==-1)
-    {
-        log_print(binary_string, "memory");
+    if(signal == -1) {
+        log_print(binary_string, "memory", num);
+    } else {
+        log_print(binary_string, "registers", num);
     }
-    else
-    {
-        log_print(binary_string, "registers");
-    }
+    free(binary_string); 
 }

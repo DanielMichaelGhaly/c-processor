@@ -13,8 +13,8 @@ void init_logger_registers(const char* filename);
 
 void close_logger();
 
-void log_print(const char* msg, char* file_name);
+void log_print(const char* msg, char* file_name, int num);
 
-void int_array_to_binary_string(int* arr, int num);
+void int_array_to_binary_string(int* arr, int signal , int num);
 
 #endif

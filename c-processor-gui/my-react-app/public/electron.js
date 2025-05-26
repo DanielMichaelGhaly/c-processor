@@ -252,6 +252,52 @@ function executeExe(
   });
 }
 
+// Enhanced function to convert binary strings to decimal
+function binaryToDecimal(binaryStr) {
+  // Remove any whitespace and validate binary string
+  const cleanBinary = binaryStr.replace(/\s/g, "");
+
+  // Check if it's a valid binary string (only 0s and 1s)
+  if (!/^[01]+$/.test(cleanBinary)) {
+    throw new Error(`Invalid binary string: ${binaryStr}`);
+  }
+
+  return parseInt(cleanBinary, 2);
+}
+
+// Enhanced function to detect and convert different number formats
+function parseNumericValue(value) {
+  const trimmedValue = value.trim();
+
+  try {
+    // Check for binary format (starts with 0b or just contains only 0s and 1s)
+    if (trimmedValue.startsWith("0b") || trimmedValue.startsWith("0B")) {
+      return binaryToDecimal(trimmedValue.substring(2));
+    }
+
+    // Check if it's a pure binary string (only 0s and 1s, length > 1 to avoid single digits)
+    if (/^[01]+$/.test(trimmedValue) && trimmedValue.length > 1) {
+      return binaryToDecimal(trimmedValue);
+    }
+
+    // Check for hexadecimal format
+    if (trimmedValue.startsWith("0x") || trimmedValue.startsWith("0X")) {
+      return parseInt(trimmedValue, 16);
+    }
+
+    // Check for regular decimal number
+    if (!isNaN(trimmedValue)) {
+      return parseInt(trimmedValue);
+    }
+
+    // If none of the above, return the original value
+    return trimmedValue;
+  } catch (error) {
+    console.error(`Error parsing numeric value "${value}":`, error.message);
+    return trimmedValue; // Return original value if parsing fails
+  }
+}
+
 function parseRegistersLog(content) {
   const registers = {};
   const lines = content.split(/\r?\n/); // Handle both Unix and Windows line endings
@@ -278,16 +324,20 @@ function parseRegistersLog(content) {
         const registerName = match[1];
         const value = match[2].trim();
 
-        // Convert hex values to decimal if needed
-        let parsedValue = value;
-        if (value.startsWith("0x") || value.startsWith("0X")) {
-          parsedValue = parseInt(value, 16);
-        } else if (!isNaN(value)) {
-          parsedValue = parseInt(value);
+        try {
+          // Use enhanced parsing function to handle binary, hex, and decimal
+          const parsedValue = parseNumericValue(value);
+          registers[registerName] = parsedValue;
+          console.log(
+            `Parsed register: ${registerName} = ${parsedValue} (original: ${value})`
+          );
+        } catch (error) {
+          console.error(
+            `Error parsing register ${registerName} with value "${value}":`,
+            error.message
+          );
+          registers[registerName] = value; // Keep original value if parsing fails
         }
-
-        registers[registerName] = parsedValue;
-        console.log(`Parsed register: ${registerName} = ${parsedValue}`);
       } else {
         console.log("Could not parse register line:", trimmedLine);
       }
@@ -324,16 +374,20 @@ function parseMemoryLog(content) {
         const address = parseInt(match[1]);
         const value = match[2].trim();
 
-        // Convert hex values to decimal if needed
-        let parsedValue = value;
-        if (value.startsWith("0x") || value.startsWith("0X")) {
-          parsedValue = parseInt(value, 16);
-        } else if (!isNaN(value)) {
-          parsedValue = parseInt(value);
+        try {
+          // Use enhanced parsing function to handle binary, hex, and decimal
+          const parsedValue = parseNumericValue(value);
+          memory[address] = parsedValue;
+          console.log(
+            `Parsed memory: ${address} = ${parsedValue} (original: ${value})`
+          );
+        } catch (error) {
+          console.error(
+            `Error parsing memory address ${address} with value "${value}":`,
+            error.message
+          );
+          memory[address] = value; // Keep original value if parsing fails
         }
-
-        memory[address] = parsedValue;
-        console.log(`Parsed memory: ${address} = ${parsedValue}`);
       } else {
         console.log("Could not parse memory line:", trimmedLine);
       }

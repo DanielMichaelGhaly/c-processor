@@ -216,11 +216,11 @@ int main()
 
     }
     for(int i = 0; i < 2048; i++) {
-        int_array_to_binary_string(memory[i],-1);
+        int_array_to_binary_string(memory[i],-1,i+1);
     }
     for(int i = 0; i<33 ;i++)
     {
-        int_array_to_binary_string(registers[i],i);
+        int_array_to_binary_string(registers[i],0,i);
     }
     
     close_logger();

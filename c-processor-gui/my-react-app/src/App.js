@@ -276,7 +276,7 @@ function App() {
           </div>
 
           {/* Debug info */}
-          {lastExecutionResult && (
+          {/* {lastExecutionResult && (
             <div className="mt-4 p-3 bg-gray-50 rounded border text-sm">
               <div className="font-medium text-gray-700 mb-2">
                 Last Execution:
@@ -297,7 +297,7 @@ function App() {
                 )}
               </div>
             </div>
-          )}
+          )} */}
         </div>
       </div>
 
