@@ -2,11 +2,11 @@
 #define QUEUE_H
 #include <stdio.h>
 #include "temp_pipline.h"
-#define MAX_SIZE 10
+#define MAX_SIZE 100
 #define ENTRY_SIZE 32 // Each entry is a 32-bit array
 
 typedef struct Queue {
-    Instruction items[MAX_SIZE]; // 2D array for 32-bit entries
+    Instruction* items[MAX_SIZE]; // 2D array for 32-bit entries
     int front;
     int back;
     int clk;

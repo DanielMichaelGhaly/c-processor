@@ -18,7 +18,7 @@ int parse_register(const char* reg);
 
 void write_binary(int* binary, int addr, int start_bit, int end_bit);
 
-void parse_instruction(const char* line, int* binary);
+int parse_instruction(const char* line, int* binary);
 
 void print_binary(int* binary);
 

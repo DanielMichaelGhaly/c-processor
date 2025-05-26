@@ -29,7 +29,7 @@ typedef struct Instruction{
     int value; 
     int* instruction; 
     int line;
-    int jump_backward;
+    int jump_backwards;
 } Instruction;
 
 void initialize_instructions(Instruction instructions[], int size);

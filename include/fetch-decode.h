@@ -31,20 +31,6 @@ Queue execution_queue;
 Queue memory_queue;
 Queue writeBack_queue;
 
-// int r1[5];
-// int r2[5];
-// int r3[5];
-// int shamt[13];
-// int immediate[18];
-// int address[28];
-
-// int ALUsig[5];
-// int shift[2];
-// int memR;
-// int memW;
-// int regW;
-// int branch;
-
 void initialize_with_zeros(int *arr, int size);
 
 int * int_to_bin32(int value, int *arr);

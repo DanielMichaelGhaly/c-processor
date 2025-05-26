@@ -14,7 +14,7 @@ void initialize_instructions(Instruction instructions[], int size) {
         instructions[i].branch = 0;
         instructions[i].value = 0;
         instructions[i].line = 0;
-        instructions[i].jump_backward = 0;
+        instructions[i].jump_backwards = 0;
         for (int j = 0; j < 5; j++) {
             instructions[i].r1[j] = 0;
             instructions[i].r2[j] = 0;
@@ -51,7 +51,7 @@ void initialize_instruction(Instruction* instruction) {
     instruction->branch = 0;
     instruction->value = 0;
     instruction->line = 0;
-    instruction->jump_backward = 0;
+    instruction->jump_backwards = 0;
 
     for (int j = 0; j < 5; j++) {
         instruction->r1[j] = 0;
@@ -83,6 +83,8 @@ void print_Instruction(Instruction* instruction) {
     printf("Completed: %d\n", instruction->completed);
 
     printf("Line: %d\n", instruction->line);
+
+    printf("Jump Backwards: %d\n", instruction->jump_backwards);
 
     printf("R1: ");
     for (int i = 0; i < 5; i++) printf("%d ", instruction->r1[i]);
