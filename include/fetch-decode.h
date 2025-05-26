@@ -6,25 +6,6 @@
 #include "main.h"
 #include "temp_pipline.h"
 
-
-// typedef struct {
-//     int ALUsig[5];
-//     int shift[2];
-//     int memR;
-//     int memW;
-//     int regW;
-//     int branch;
-// } ControlSignals;
-
-// typedef struct {
-//     int r1;
-//     int r2;
-//     int r3;
-//     int shamt;
-//     int immediate;
-//     int address;
-// } DecodedFields;
-
 Queue fetch_queue;
 Queue decode_queue;
 Queue execution_queue;
@@ -41,13 +22,13 @@ int * pc_incr(int* pc);
 
 void fetch(int* pc, Instruction* instruction);
 
-void decode(Instruction* instruction);
+void decode();
 
 int access_register_file(int * reg_num);
 
-void memory_access(Instruction* instruction,int d);
+void memory_access();
 
-void write_back(Instruction* instruction, int d);
+void write_back();
 
 int signed_immediate_to_int(int* bits, int len);
 

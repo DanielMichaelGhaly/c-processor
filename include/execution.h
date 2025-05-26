@@ -16,7 +16,7 @@ Instruction instructions[MAX_INSTRUCTIONS];
 
 // int shifting(char * instruction, int R1, int R2, int R3);
 
-int execute(Instruction* instruction);
+int execute();
 int alu(char* instruction,int R2, int R3);
 int shifting(char* instruction, int R1, int R2, int R3);
 void flush_Queues();

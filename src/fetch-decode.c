@@ -42,7 +42,7 @@ int * pc_incr(int* pc) {
 
 void fetch(int* pc, Instruction* instruction) {
     if(bin_to_int(pc, 32) == total_instructions) {
-        printf("PC at end");
+        printf("PC at end\n");
         return;
     }
     int *IR = (int *) memory[bin_to_int(registers[32], 32)];
@@ -51,20 +51,18 @@ void fetch(int* pc, Instruction* instruction) {
     int_to_bin32(pc_val, registers[32]);
     instruction->instruction = IR;
     instruction->line = pc_val;
-    printf("fetching instruction at line: %d\n", instruction->line);
     enqueue(&fetch_queue, instruction);
 }
 
-void decode(Instruction* instruction) {
+void decode() {
     if(isEmpty(&fetch_queue))
     {
         printf("No instruction to decode\n");
         return;
     }
-    Instruction* instruction_dequeued = dequeue(&fetch_queue);
-    printf("Decoding instruction at line: %d\n", instruction_dequeued->line);
+    Instruction* instruction = dequeue(&fetch_queue);
     int* instr = instruction->instruction;
-    enqueue(&decode_queue, instruction_dequeued);
+    enqueue(&decode_queue, instruction);
 
     instruction->instruction = instr;
 
@@ -138,30 +136,28 @@ int access_register_file(int * reg_num) {
     return bin_to_int(data, 32);
 }
 
-void memory_access(Instruction* instruction, int d) {
+void memory_access() {
     if(isEmpty(&execution_queue))
     {
         printf("No instruction to memory access\n");
         return;
     }
-    Instruction* instruction_dequeued = dequeue(&execution_queue);
-    printf("Memory access of instruction at line: %d\n", instruction_dequeued->line);
-
-    enqueue(&memory_queue, instruction_dequeued);
+    Instruction* instruction = dequeue(&execution_queue);
+    enqueue(&memory_queue, instruction);
 
     int * data = malloc(32 * sizeof(int));
-    int_to_bin32(d, data);
+    int_to_bin32(instruction->value, data);
     if (instruction->memW == 0 && instruction->memR == 0) return;
 
     if (instruction->memR) {
         // printf("entered memory read\n");
-        int * mem_data = memory[d+1023];
+        int * mem_data = memory[instruction->value+1023];
         for (int i = 0; i < 32; ++i) {
             data[i] = mem_data[i];
         }
     }
     if (instruction->memW) {
-        int mem_index = 1023 + d;
+        int mem_index = 1023 + instruction->value;
         int *dest = memory[mem_index];
         for (int j = 0; j < 32; j++) {
             dest[j] = registers[bin_to_int(instruction->r1, 5)][j];
@@ -169,18 +165,14 @@ void memory_access(Instruction* instruction, int d) {
     }
 }
 
-void write_back(Instruction* instruction, int d) {
-    d = 0;
-    
+void write_back() {
     if(isEmpty(&memory_queue))
     {
         printf("No instruction to write back\n");
         return;
     }
-    Instruction* instruction_dequeued = dequeue(&memory_queue);
-    printf("Write Back of instruction at line: %d\n", instruction_dequeued->line);
-
-    enqueue(&writeBack_queue, instruction_dequeued);
+    Instruction* instruction = dequeue(&memory_queue);
+    enqueue(&writeBack_queue, instruction);
 
     int* data = malloc(32 * sizeof(int));
     int_to_bin32(bin_to_int(instruction->immediate,18), data);
@@ -202,7 +194,7 @@ void write_back(Instruction* instruction, int d) {
 
 int signed_immediate_to_int(int* bits, int len) {
     int value = 0;
-        for (int i = 0; i < len; i++) {
+    for (int i = 0; i < len; i++) {
         value = (value << 1) | bits[i];
     }
     if (bits[0] == 1) { 

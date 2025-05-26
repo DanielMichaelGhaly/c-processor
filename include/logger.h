@@ -2,13 +2,18 @@
 #define logger_h
 #include <stdio.h>
 #include <stdlib.h>
-extern FILE* log_file;
+#include <string.h>
 
-void init_logger(const char* filename);
+extern FILE* log_file_memory;
+extern FILE* log_file_registers;
+
+void init_logger_memory(const char* filename);
+
+void init_logger_registers(const char* filename);
 
 void close_logger();
 
-void log_print(const char* msg);
+void log_print(const char* msg, char* file_name);
 
 void int_array_to_binary_string(int* arr, int num);
 

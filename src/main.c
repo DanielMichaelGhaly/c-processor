@@ -33,7 +33,6 @@ void readFile(char * filePath)
 
     char line[MAX_LINE_LEN];
     int binary[32];
-    // int line_number = 0;
     int i = 0;
     int j = 0;
 
@@ -58,6 +57,56 @@ void readFile(char * filePath)
     fclose(fp);
 }
 
+void print_pipeline_stage(const char* stage, Instruction* instr) {
+    if (instr == NULL) {
+        printf("%s Stage: Empty\n", stage);
+        return;
+    }
+    printf("%s Stage: Instruction at line %d\n", stage, instr->line);
+    
+    // Print input parameters based on stage
+    if (strcmp(stage, "Fetch") == 0) {
+        printf("PC: %d\n", bin_to_int(registers[32], 32));
+    }
+    else if (strcmp(stage, "Decode") == 0) {
+        printf("Instruction bits: ");
+        for (int i = 0; i < 32; i++) {
+            printf("%d", instr->instruction[i]);
+        }
+        printf("\n");
+    }
+    else if (strcmp(stage, "Execute") == 0) {
+        printf("R1: %d, R2: %d, R3: %d\n", 
+            bin_to_int(instr->r1, 5),
+            bin_to_int(instr->r2, 5),
+            bin_to_int(instr->r3, 5));
+    }
+    else if (strcmp(stage, "Memory") == 0) {
+        if (instr->memW) 
+            printf("Memory Write at address: %d\n", instr->value + 1023);
+        if (instr->memR)
+            printf("Memory Read from address: %d\n", instr->value + 1023);
+    }
+    else if (strcmp(stage, "WriteBack") == 0) {
+        if (instr->regW)
+            printf("Writing to R%d\n", bin_to_int(instr->r1, 5));
+    }
+}
+
+void print_register_updates(int reg_num, int old_value, int new_value) {
+    if (old_value != new_value) {
+        printf("Register Update - R%d: %d -> %d\n", 
+               reg_num, old_value, new_value);
+    }
+}
+
+void print_memory_updates(int address, int old_value, int new_value) {
+    if (old_value != new_value) {
+        printf("Memory Update - Address %d: %d -> %d\n", 
+               address, old_value, new_value);
+    }
+}
+
 int main()
 {
 
@@ -66,7 +115,8 @@ int main()
     initQueue(&execution_queue);
     initQueue(&memory_queue);
     initQueue(&writeBack_queue);
-    init_logger("data/log.txt");
+    init_logger_memory("data/memory_log.txt");
+    init_logger_registers("data/registers_log.txt");
     readFile("data/test.txt");
 
 
@@ -79,7 +129,19 @@ int main()
     printf("Total Instructions: %d\n", total_instructions);
 
     while (completed<total_instructions) {
+        printf("\n=== Clock Cycle %d ===\n", cycle);
         memory_busy = 0;
+
+        // Store old values for comparison
+        int old_reg_values[33];
+        int old_mem_values[2048];
+        for(int i = 0; i < 33; i++) {
+            old_reg_values[i] = bin_to_int(registers[i], 32);
+        }
+        for(int i = 0; i < 2048; i++) {
+            old_mem_values[i] = bin_to_int(memory[i], 32);
+        }
+
         for (int i = 0; i < total_instructions; i++) {
             if (instructions[i].completed) 
             {
@@ -89,7 +151,8 @@ int main()
             // Write Back
             if (instructions[i].memory != -1 && instructions[i].write_back == -1 && cycle > instructions[i].memory) {
                 instructions[i].write_back = cycle;
-                write_back(&instructions[i],instructions[i].value);
+                write_back();
+                print_pipeline_stage("WriteBack", &instructions[i]);
                 if(instructions[i].jump_backwards==0)
                 {
                     instructions[i].completed = 1;
@@ -99,7 +162,6 @@ int main()
                     instructions[i].jump_backwards = 0;
                     initialize_instruction(&instructions[i]);
                 }
-                printf("finished write back stage\n");
                 continue;
             }
 
@@ -107,17 +169,17 @@ int main()
             if (instructions[i].execute_end != -1 && instructions[i].memory == -1 && cycle > instructions[i].execute_end && !memory_busy) {
                 instructions[i].memory = cycle;
                 memory_busy = 1;
-                memory_access(&instructions[i],instructions[i].value);
-                printf("finished memory stage\n");
+                memory_access();
+                print_pipeline_stage("Memory", &instructions[i]);
                 continue;
             }
             // Execute (2 cycles)
             if (instructions[i].decode_end != -1 && instructions[i].execute_start == -1 && cycle > instructions[i].decode_end) {
                 instructions[i].execute_start = cycle;
                 instructions[i].execute_end = cycle + 1;
-                res_exec = execute(&instructions[i]);
+                res_exec = execute();
                 instructions[i].value = res_exec;
-                printf("finished execute stage\n");
+                print_pipeline_stage("Execute", &instructions[i]);
                 continue;
             }
 
@@ -125,8 +187,8 @@ int main()
             if (instructions[i].fetch != -1 && instructions[i].decode_start == -1 && cycle > instructions[i].fetch) {
                 instructions[i].decode_start = cycle;
                 instructions[i].decode_end = cycle + 1;
-                decode(&instructions[i]);
-                printf("finished decode stage\n");
+                decode();
+                print_pipeline_stage("Decode", &instructions[i]);
                 continue;
             }
 
@@ -136,32 +198,29 @@ int main()
                 instructions[i].fetch = cycle;
                 last_fetch_cycle = cycle;
                 fetch(registers[32], &(instructions[i]));
-                printf("finished fetch stage \n");
+                print_pipeline_stage("Fetch", &instructions[i]);
                 continue;
             }
         }
+            // Print register and memory updates
+        for(int i = 0; i < 33; i++) {
+            int new_value = bin_to_int(registers[i], 32);
+            print_register_updates(i, old_reg_values[i], new_value);
+        }
+        
+        for(int i = 0; i < 2048; i++) {
+            int new_value = bin_to_int(memory[i], 32);
+            print_memory_updates(i, old_mem_values[i], new_value);
+        }
         cycle++;
-        // for (int i = 0; i < total_instructions; i++) {
-        //     printf("Instruction %d: ", i + 1);
-        //     printf("IF=%d, ID=[%d-%d], EX=[%d-%d], MEM=%d, WB=%d\n",
-        //            instructions[i].fetch,
-        //            instructions[i].decode_start, instructions[i].decode_end,
-        //            instructions[i].execute_start, instructions[i].execute_end,
-        //            instructions[i].memory,
-        //            instructions[i].write_back);
-        // }
+
     }
-    printf("Simulation completed.\n");
-    printf("Total Instructions: %d\n", total_instructions);
     for(int i = 0; i < 2048; i++) {
         int_array_to_binary_string(memory[i],-1);
     }
-
-    log_print("Registers:");
     for(int i = 0; i<33 ;i++)
     {
         int_array_to_binary_string(registers[i],i);
-        printf("%d: \n", bin_to_int(registers[i], 32));
     }
     
     close_logger();

@@ -8,19 +8,18 @@ int bits_to_int(const int *bits, int len) {
     return val;
 }
 
-int execute(Instruction* instruction) {
+int execute() {
 
     if(isEmpty(&decode_queue))
     {
         printf("No instruction to execute\n");
         return 0;
     }
-    Instruction* instruction_dequeued = dequeue(&decode_queue);
-    printf("Executing instruction at line: %d\n", instruction_dequeued->line);
+    Instruction* instruction = dequeue(&decode_queue);
     int* instr = instruction->instruction;
 
 
-    enqueue(&execution_queue, instruction_dequeued);
+    enqueue(&execution_queue, instruction);
 
     if(bin_to_int(instr, 32)==0){
         return 0;
@@ -49,16 +48,12 @@ int execute(Instruction* instruction) {
     if(instruction->branch > 0) {
         if(instruction->branch ==1)
         {
-            printf("jump to \n");
-            printf("address: %d \n", bin_to_int(instruction->address,28));
             int address_jumped_to = bin_to_int(instruction->address,28);
             if(address_jumped_to<bin_to_int(registers[32],32)-1)
             {
-                printf("entered if conidtion\n");
                 instruction->jump_backwards = 1;
                 instructions[instruction->line-1].jump_backwards = 1;
                 instructions[instruction->line-2].jump_backwards = 1;
-                // instructions[instruction->line-2].jump_backwards = 1;
                 for(int i = address_jumped_to; i<instruction->line-2; i++)
                 {
                     initialize_instruction(&instructions[i]);
@@ -75,10 +70,24 @@ int execute(Instruction* instruction) {
         }
         else{
             if(r1_val==r2_val){
-                printf("they are equal\n");
-                completed = completed + bin_to_int(instruction->immediate,18)-1;
+                int address_jumped_to = signed_immediate_to_int(instruction->immediate,18)+bin_to_int(registers[32],32)-1;
+                printf("Completed before: %d\n", completed);
+                if(address_jumped_to<bin_to_int(registers[32],32)-1)
+                {
+                    printf("Jumping to address %d\n", address_jumped_to);
+                    instruction->jump_backwards = 1;
+                    instructions[instruction->line-1].jump_backwards = 1;
+                    instructions[instruction->line-2].jump_backwards = 1;
+                    for(int i = address_jumped_to; i<instruction->line-2; i++)
+                    {
+                        initialize_instruction(&instructions[i]);
+                        completed--;
+                    }
+                }
+                // completed = completed + signed_immediate_to_int(instruction->immediate,18)-1;
+                printf("Completed after: %d\n", completed);
                 int temp_pc_val = bits_to_int(registers[32], 32);
-                int_to_bin32(temp_pc_val+bin_to_int(instruction->immediate,18)-1, registers[32]);
+                int_to_bin32(temp_pc_val+signed_immediate_to_int(instruction->immediate,18)-1, registers[32]);
                 flush_Queues(instr);
             }
         }
@@ -136,17 +145,10 @@ int shifting(char* instruction, int R1, int R2, int R3)
 void flush_Queues() {
     while(!isEmpty(&fetch_queue)) {
         Instruction* flushed_Instr = dequeue(&fetch_queue);
-        printf("line in original array before is not zero : %d \n", instructions[14].line);
-        printf("Flushing instruction at line: %d\n", flushed_Instr->line);
         initialize_instruction(flushed_Instr);
-        print_Instruction(flushed_Instr);
-        printf("line in original array is now zero : %d \n", instructions[14].line);
-        printf("instruction is now: \n");
-        print_Instruction(&instructions[15]);
     }
     while(!isEmpty(&decode_queue)) {
         Instruction* flushed_Instr_Dequeue = dequeue(&decode_queue);
-        printf("Flushing instruction at line: %d\n", flushed_Instr_Dequeue->line);
         initialize_instruction(flushed_Instr_Dequeue);
     }  
 }

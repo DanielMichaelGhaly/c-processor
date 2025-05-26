@@ -34,4 +34,8 @@ int res_exec;
 
 void readFile(char * filePath);
 void printArr(int* arr, int size);
+void print_pipeline_stage(const char* stage, Instruction* instr);
+void print_register_updates(int reg_num, int old_value, int new_value);
+void print_memory_updates(int address, int old_value, int new_value);
+
 #endif
