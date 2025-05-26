@@ -2,6 +2,8 @@ import React, { useState } from "react";
 
 function App() {
   const [instruction, setInstruction] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastExecutionResult, setLastExecutionResult] = useState(null);
 
   // Initialize registers (R0-R31 + PC)
   const [registers, setRegisters] = useState(() => {
@@ -27,59 +29,118 @@ function App() {
   };
 
   const handleStart = async () => {
+    if (!instruction.trim()) {
+      alert("Please enter some instructions before starting.");
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
       // Check if we're running in Electron
       if (window.electronAPI) {
+        console.log("Running in Electron environment");
+        console.log("Sending instruction:", instruction);
+
         // Electron environment - can create files and run executables
         const result = await window.electronAPI.createFileAndRunExe(
           instruction
         );
 
-        console.log("Success:", result.message);
-        console.log("File created at:", result.filePath);
-        if (result.stdout) {
-          console.log("Program output:", result.stdout);
-        }
-        if (result.stderr) {
-          console.log("Program errors:", result.stderr);
-        }
+        console.log("Execution result:", result);
+        setLastExecutionResult(result);
 
-        // Update registers and memory from log files
-        if (
-          result.registersData &&
-          Object.keys(result.registersData).length > 0
-        ) {
-          setRegisters((prevRegs) => {
-            const newRegs = { ...prevRegs };
-            // Update with data from registers_log.txt
-            Object.entries(result.registersData).forEach(([reg, value]) => {
-              newRegs[reg] = value;
+        if (result.success) {
+          console.log("Success:", result.message);
+          console.log("File created at:", result.filePath);
+          console.log("Executable path:", result.exePath);
+          console.log("Working directory:", result.workingDir);
+          console.log("Exit code:", result.exitCode);
+
+          if (result.stdout) {
+            console.log("Program output:", result.stdout);
+          }
+          if (result.stderr) {
+            console.log("Program errors:", result.stderr);
+          }
+
+          // Update registers and memory from log files
+          if (
+            result.registersData &&
+            Object.keys(result.registersData).length > 0
+          ) {
+            console.log("Updating registers with data:", result.registersData);
+            setRegisters((prevRegs) => {
+              const newRegs = { ...prevRegs };
+              // Reset all registers to 0 first
+              Object.keys(newRegs).forEach((reg) => {
+                newRegs[reg] = 0;
+              });
+              // Update with data from registers_log.txt
+              Object.entries(result.registersData).forEach(([reg, value]) => {
+                newRegs[reg] = value;
+              });
+              return newRegs;
             });
-            return newRegs;
-          });
-          console.log("Registers updated from log file");
-        }
+            console.log("Registers updated from log file");
+          } else {
+            console.log("No register data received");
+          }
 
-        if (result.memoryData && Object.keys(result.memoryData).length > 0) {
-          setMemory((prevMem) => {
-            const newMem = { ...prevMem };
-            // Update with data from memory_log.txt
-            Object.entries(result.memoryData).forEach(([addr, value]) => {
-              newMem[parseInt(addr)] = value;
+          if (result.memoryData && Object.keys(result.memoryData).length > 0) {
+            console.log("Updating memory with data:", result.memoryData);
+            setMemory((prevMem) => {
+              const newMem = { ...prevMem };
+              // Reset all memory to 0 first
+              Object.keys(newMem).forEach((addr) => {
+                newMem[parseInt(addr)] = 0;
+              });
+              // Update with data from memory_log.txt
+              Object.entries(result.memoryData).forEach(([addr, value]) => {
+                newMem[parseInt(addr)] = value;
+              });
+              return newMem;
             });
-            return newMem;
-          });
-          console.log("Memory updated from log file");
-        }
+            console.log("Memory updated from log file");
+          } else {
+            console.log("No memory data received");
+          }
 
-        alert(
-          `Success! File created and main.exe executed.\nFile: ${
-            result.filePath
-          }\nOutput: ${result.stdout || "No output"}\nRegisters updated: ${
+          let alertMessage = `Success! File created and main.exe executed.\n`;
+          alertMessage += `File: ${result.filePath}\n`;
+          alertMessage += `Executable: ${result.exePath}\n`;
+          alertMessage += `Exit Code: ${result.exitCode}\n`;
+          alertMessage += `Output: ${result.stdout || "No output"}\n`;
+
+          if (result.stderr) {
+            alertMessage += `Errors: ${result.stderr}\n`;
+          }
+
+          alertMessage += `Registers updated: ${
             Object.keys(result.registersData || {}).length
-          }\nMemory updated: ${Object.keys(result.memoryData || {}).length}`
-        );
+          }\n`;
+          alertMessage += `Memory updated: ${
+            Object.keys(result.memoryData || {}).length
+          }`;
+
+          alert(alertMessage);
+        } else {
+          console.error("Execution failed:", result);
+          let errorMessage = `Execution failed!\n`;
+          errorMessage += `Exit Code: ${result.exitCode}\n`;
+          errorMessage += `Error: ${result.message}\n`;
+
+          if (result.stderr) {
+            errorMessage += `Stderr: ${result.stderr}\n`;
+          }
+          if (result.stdout) {
+            errorMessage += `Stdout: ${result.stdout}`;
+          }
+
+          alert(errorMessage);
+        }
       } else {
+        console.log("Running in browser environment");
         // Browser environment - fallback to download
         const fileContent = instruction || "No instruction provided";
         const blob = new Blob([fileContent], { type: "text/plain" });
@@ -101,6 +162,8 @@ function App() {
     } catch (error) {
       console.error("Error:", error);
       alert("Error: " + error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -197,18 +260,44 @@ function App() {
             <textarea
               id="instruction"
               value={instruction}
-              rows={1024}
+              rows={8}
               onChange={handleInstructionChange}
-              className="h-48 flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-lg"
+              disabled={isLoading}
+              className="h-48 flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-lg disabled:bg-gray-100 disabled:cursor-not-allowed"
               placeholder="Enter instructions line by line..."
             />
             <button
               onClick={handleStart}
-              className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-medium"
+              disabled={isLoading}
+              className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed min-w-[80px]"
             >
-              Start
+              {isLoading ? "Running..." : "Start"}
             </button>
           </div>
+
+          {/* Debug info */}
+          {lastExecutionResult && (
+            <div className="mt-4 p-3 bg-gray-50 rounded border text-sm">
+              <div className="font-medium text-gray-700 mb-2">
+                Last Execution:
+              </div>
+              <div className="text-gray-600">
+                <div>
+                  Status: {lastExecutionResult.success ? "Success" : "Failed"}
+                </div>
+                <div>Exit Code: {lastExecutionResult.exitCode}</div>
+                <div>Executable: {lastExecutionResult.exePath}</div>
+                {lastExecutionResult.stdout && (
+                  <div>Output: {lastExecutionResult.stdout}</div>
+                )}
+                {lastExecutionResult.stderr && (
+                  <div className="text-red-600">
+                    Errors: {lastExecutionResult.stderr}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

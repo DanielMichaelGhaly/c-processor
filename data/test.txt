@@ -1,1 +1,1 @@
-MOVI R12 3
+MOVI R2 3
