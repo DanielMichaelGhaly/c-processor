@@ -252,8 +252,8 @@ function executeExe(
   });
 }
 
-// Enhanced function to convert binary strings to decimal
-function binaryToDecimal(binaryStr) {
+// Enhanced function to convert binary strings to decimal using 2's complement
+function binaryToDecimalTwosComplement(binaryStr, bitWidth = null) {
   // Remove any whitespace and validate binary string
   const cleanBinary = binaryStr.replace(/\s/g, "");
 
@@ -262,22 +262,45 @@ function binaryToDecimal(binaryStr) {
     throw new Error(`Invalid binary string: ${binaryStr}`);
   }
 
-  return parseInt(cleanBinary, 2);
+  // If no bit width specified, use the length of the binary string
+  const width = bitWidth || cleanBinary.length;
+
+  // Pad with leading zeros if necessary
+  const paddedBinary = cleanBinary.padStart(width, "0");
+
+  // Check if the most significant bit is 1 (negative number in 2's complement)
+  if (paddedBinary[0] === "1") {
+    // For negative numbers in 2's complement:
+    // 1. Invert all bits
+    let inverted = "";
+    for (let i = 0; i < paddedBinary.length; i++) {
+      inverted += paddedBinary[i] === "0" ? "1" : "0";
+    }
+
+    // 2. Add 1 to get the magnitude
+    const magnitude = parseInt(inverted, 2) + 1;
+
+    // 3. Return as negative
+    return -magnitude;
+  } else {
+    // Positive number, convert normally
+    return parseInt(paddedBinary, 2);
+  }
 }
 
-// Enhanced function to detect and convert different number formats
-function parseNumericValue(value) {
+// Enhanced function to detect and convert different number formats for registers
+function parseRegisterValue(value) {
   const trimmedValue = value.trim();
 
   try {
     // Check for binary format (starts with 0b or just contains only 0s and 1s)
     if (trimmedValue.startsWith("0b") || trimmedValue.startsWith("0B")) {
-      return binaryToDecimal(trimmedValue.substring(2));
+      return binaryToDecimalTwosComplement(trimmedValue.substring(2));
     }
 
     // Check if it's a pure binary string (only 0s and 1s, length > 1 to avoid single digits)
     if (/^[01]+$/.test(trimmedValue) && trimmedValue.length > 1) {
-      return binaryToDecimal(trimmedValue);
+      return binaryToDecimalTwosComplement(trimmedValue);
     }
 
     // Check for hexadecimal format
@@ -293,9 +316,27 @@ function parseNumericValue(value) {
     // If none of the above, return the original value
     return trimmedValue;
   } catch (error) {
-    console.error(`Error parsing numeric value "${value}":`, error.message);
+    console.error(`Error parsing register value "${value}":`, error.message);
     return trimmedValue; // Return original value if parsing fails
   }
+}
+
+// Function to keep memory values as binary strings (no conversion to decimal)
+function parseMemoryValue(value) {
+  const trimmedValue = value.trim();
+
+  // If it's a binary string (with or without 0b prefix), keep it as is
+  if (trimmedValue.startsWith("0b") || trimmedValue.startsWith("0B")) {
+    return trimmedValue; // Keep the 0b prefix
+  }
+
+  // If it's a pure binary string (only 0s and 1s), keep it as is
+  if (/^[01]+$/.test(trimmedValue)) {
+    return trimmedValue; // Keep the binary string as is
+  }
+
+  // For other formats (hex, decimal), also keep as original string
+  return trimmedValue;
 }
 
 function parseRegistersLog(content) {
@@ -325,8 +366,8 @@ function parseRegistersLog(content) {
         const value = match[2].trim();
 
         try {
-          // Use enhanced parsing function to handle binary, hex, and decimal
-          const parsedValue = parseNumericValue(value);
+          // Use 2's complement parsing for registers
+          const parsedValue = parseRegisterValue(value);
           registers[registerName] = parsedValue;
           console.log(
             `Parsed register: ${registerName} = ${parsedValue} (original: ${value})`
@@ -375,8 +416,8 @@ function parseMemoryLog(content) {
         const value = match[2].trim();
 
         try {
-          // Use enhanced parsing function to handle binary, hex, and decimal
-          const parsedValue = parseNumericValue(value);
+          // Keep memory values as binary strings (no decimal conversion)
+          const parsedValue = parseMemoryValue(value);
           memory[address] = parsedValue;
           console.log(
             `Parsed memory: ${address} = ${parsedValue} (original: ${value})`
