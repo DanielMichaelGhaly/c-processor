@@ -174,8 +174,8 @@ void write_back() {
     Instruction* instruction = dequeue(&memory_queue);
     enqueue(&writeBack_queue, instruction);
 
-    int* data = malloc(32 * sizeof(int));
-    int_to_bin32(bin_to_int(instruction->immediate,18), data);
+    //int* data = malloc(32 * sizeof(int));
+    //int_to_bin32(bin_to_int(instruction->immediate,18), data);
     if (instruction->regW) {
         int reg_index = bin_to_int(instruction->r1, 5);
         if(reg_index==0)
