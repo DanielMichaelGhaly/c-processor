@@ -2,7 +2,7 @@ MOVI R1 1
 MOVI R2 2		
 MOVI R3 3		
 
-JMP 0      
+JMP 7      
 
 MOVI R4 4		
 MOVI R5 5		
